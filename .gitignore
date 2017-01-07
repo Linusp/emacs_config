@@ -3,3 +3,7 @@
 
 # tempfile
 *~
+
+# other
+archives/
+emacs.d/elpa/gnupg/
