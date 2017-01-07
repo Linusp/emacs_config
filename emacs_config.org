@@ -1,0 +1,93 @@
+#+TITLE: Emacs 配置
+
+* 扩展无关的函数定义
+
+** 对注释和反注释的改进
+
+   默认的注释行为是按下 'M-;' 后对所在行进行注释，但经常还会需要 *将某行注释掉* ，这里定义了一个为某行添加注释或者注释莫行的方法。
+   #+BEGIN_SRC emacs-lisp
+   (defun comment-dwim-line (&optional arg)
+     (interactive "*P")
+     (comment-normalize-vars)
+     (if (and
+          (not (region-active-p))
+          (not (looking-at "[ \t]*$")))
+         (comment-or-uncomment-region
+          (line-beginning-position)
+          (line-end-position))
+       (comment-dwim arg)))
+   #+END_SRC
+
+** 行/区域上下移动
+
+   首先定义行移动的方法
+   #+BEGIN_SRC emacs-lisp
+   (defun move-line (n)
+     "Move the current line up or down by N lines."
+     (interactive "p")
+     (setq col (current-column))
+     (beginning-of-line)
+     (setq start (point))
+     (end-of-line)
+     (forward-char)
+     (setq end (point))
+     (let ((line-text (delete-and-extract-region start end)))
+       (forward-line n)
+       (insert line-text)
+       (forward-line -1)
+       (forward-char col)))
+
+   (defun move-line-up (n)
+     "Move the current line up by N lines."
+     (interactive "p")
+     (move-line (if (null n) -1 (- n))))
+
+   (defun move-line-down (n)
+     "Move the current line down by N lines."
+     (interactive "p")
+     (move-line (if (null n) 1 n)))
+   #+END_SRC
+
+   然后定义区域移动的方法
+   #+BEGIN_SRC emacs-lisp
+   (defun move-region (start end n)
+     "Move the current region up or down by N lines."
+     (interactive "r\np")
+     (let ((line-text (delete-and-extract-region start end)))
+       (forward-line n)
+       (let ((start (point)))
+         (insert line-text)
+         (setq deactivate-mark nil)
+         (set-mark start))))
+
+   (defun move-region-up (start end n)
+     "Move the current line up by N lines."
+     (interactive "r\np")
+     (move-region start end (if (null n) -1 (- n))))
+
+   (defun move-region-down (start end n)
+     "Move the current line down by N lines."
+     (interactive "r\np")
+     (move-region start end (if (null n) 1 n)))
+   #+END_SRC
+
+   最后将行移动和区域移动整合到一起，这样在后面定义快捷键的时候可以使用同一个快捷键
+   #+BEGIN_SRC emacs-lisp
+   (defun move-line-region-up (&optional start end n)
+     (interactive "r\np")
+     (if (use-region-p) (move-region-up start end n) (move-line-up n)))
+
+   (defun move-line-region-down (&optional start end n)
+     (interactive "r\np")
+     (if (use-region-p) (move-region-down start end n) (move-line-down n)));
+   #+END_SRC
+
+** 显示非 ASCII 字符
+
+   执行这个方法后，能在一个新的 buffer 中高亮所有非 ASCII 字符。写这个方法的一个目的是用来检查文本中是否有全角空白字符。
+   #+BEGIN_SRC emacs-lisp
+   (defun occur-non-ascii ()
+     "Find any non-ascii characters in the current buffer."
+     (interactive)
+     (occur "[^[:ascii:]]"))
+   #+END_SRC

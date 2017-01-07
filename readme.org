@@ -1,0 +1,22 @@
+* 个人 Emacs 配置
+
+** 版本
+
+   - Emacs: 25.1
+
+** 使用方法
+
+   项目结构如下
+   #+BEGIN_EXAMPLE
+   .
+   ├── dot_emacs
+   ├── emacs_config.org
+   └── emacs.d
+   #+END_EXAMPLE
+
+   - =dot_emacs= 对应 Emacs 配置文件的入口，需将其映射为 =$HOME/.emacs=
+   - =emacs.d= 对应 .emacs.d 目录，用来存放依赖的插件，需将其映射为 =$HOME/.emacs.d=
+   - =emacs_config.org= 中使用 =org-dotemacs= 来对各个插件和 Emacs 本身进行更细致的设置，需与 =dot_emacs= 中设置的路径一致
+
+
+   也可以下载本项目后，运行 =install.sh= 来自动完成上述操作
