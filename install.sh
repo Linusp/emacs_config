@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -x
-
 dot_emacs_path=$HOME/.emacs
 emacs_dir=$HOME/.emacs.d
 
@@ -13,13 +11,14 @@ if [ -f $dot_emacs_path ];then
 	no) exit 1
 	    ;;
     esac
-    mv $dot_emacs_path ${dot_emacs_path}.bak
-    echo "backup $dot_emacs_path to ${dot_emacs_path}.bak"
+    bak=${dot_emacs_path}.bak.$(date +%s)
+    mv $dot_emacs_path $bak
+    echo "backup $dot_emacs_path to $bak"
 fi
 ln -s $(readlink -f dot_emacs) $dot_emacs_path
 echo "link dot_emacs to $dot_emacs_path"
 
-if [ -d $emacs_dir ];then
+if [ -e $emacs_dir ];then
     read -p "Emacs directory already exists, continue?[y/n] " op
     case $op in
 	n) exit 1
@@ -27,8 +26,9 @@ if [ -d $emacs_dir ];then
 	no) exit 1
 	    ;;
     esac
-    mv $emacs_dir ${emacs_dir}.bak
-    echo "backup $emacs_dir to ${emacs_dir}.bak"
+    bak=${emacs_dir}.bak.$(date +%s)
+    mv $emacs_dir $bak
+    echo "backup $emacs_dir to $bak"
 fi
 ln -s $(readlink -f emacs.d) $emacs_dir
 echo "link emacs.d to ${emacs_dir}"
