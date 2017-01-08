@@ -7,3 +7,6 @@
 # other
 archives/
 emacs.d/elpa/gnupg/
+smex-items
+ido.last
+emacs.d/elpa/*-readme.txt
