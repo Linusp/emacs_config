@@ -1,0 +1,1 @@
+(define-package "smart-mode-line" "20160818.2008" "A color coded smart modeline."  '((emacs "24.3") (rich-minority "0.1.1") ) :url "https://github.com/Malabarba/smart-mode-line" :keywords '("mode-line faces themes" ))

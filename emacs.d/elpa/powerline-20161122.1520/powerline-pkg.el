@@ -1,0 +1,1 @@
+(define-package "powerline" "20161122.1520" "Rewrite of Powerline"  '((cl-lib "0.2") ) :url "https://github.com/milkypostman/powerline" :keywords '("mode-line" ))

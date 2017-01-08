@@ -1,0 +1,1 @@
+(define-package "slime" "20161109.2240" "Superior Lisp Interaction Mode for Emacs *lexicalbinding:t*"  '((cl-lib "0.5") (macrostep "0.9") ) :url "https://github.com/slime/slime" :keywords '("languages" "lisp" "slime" ))

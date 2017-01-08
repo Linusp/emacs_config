@@ -1,0 +1,1 @@
+(define-package "highlight-parentheses" "20151108.1516" "highlight surrounding parentheses"  'nil  :url "https://github.com/tsdh/highlight-parentheses.el" :keywords '("faces" "matching" ))

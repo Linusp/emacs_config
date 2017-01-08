@@ -1,0 +1,1 @@
+(define-package "color-theme" "20160703.1202" "install color themes"  'nil  :url "http://bzr.savannah.gnu.org/r/color-theme/trunk" :keywords '("faces" ))

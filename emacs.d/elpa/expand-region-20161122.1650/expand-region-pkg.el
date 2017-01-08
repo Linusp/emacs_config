@@ -1,0 +1,1 @@
+(define-package "expand-region" "20161122.1650"                 "Increase selected region by semantic units.")

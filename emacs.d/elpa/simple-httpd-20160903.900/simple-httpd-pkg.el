@@ -1,0 +1,1 @@
+(define-package "simple-httpd" "20160903.900" "pureisp HTTP server"  '((cl-lib "0.3") ) :url "https://github.com/skeeto/emacs-web-server" )
