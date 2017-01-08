@@ -1,10 +1,693 @@
 #+TITLE: Emacs 配置
 
-* 扩展无关的函数定义
+* 初始化设置
+
+  启动 server 模式，为后面的 edit-server 以及终端使用 emacsclient 做准备
+  #+BEGIN_SRC emacs-lisp
+  (server-start)
+  #+END_SRC
+
+  临时文件设置
+  #+BEGIN_SRC emacs-lisp
+  (setq make-backup-file nil)
+  (setq backup-inhibited t)               ;不产生备份
+  (setq auto-save-list-file-prefix nil)
+  (setq auto-save-default nil)            ;不生成 #fname# 格式的临时文件
+  #+END_SRC
+
+  剪贴板设置
+  #+BEGIN_SRC emacs-lisp
+  (setq x-select-enable-clipboard t)      ;共享剪贴板
+  (setq x-select-enable-primary t)        ;共享中键复制内容
+  (setq kill-ring-max 200)                ;killring 大小
+  #+END_SRC
+
+  滚动设置
+  #+BEGIN_SRC emacs-lisp
+  (setq scroll-conservatively 101)        ;光标移出时平滑滚动而不是重定位到中央
+  (setq mouse-wheel-scroll-amount '(1))   ;用鼠标滚动时一次只滚动一行
+  #+END_SRC
+
+  设置打开网页链接时使用的默认浏览器为 Chrome
+  #+BEGIN_SRC emacs-lisp
+  (setq browse-url-generic-program (executable-find "google-chrome"))
+  (setq browse-url-browser-function 'browse-url-generic)
+  #+END_SRC
+
+  其他杂项
+  #+BEGIN_SRC emacs-lisp
+  (setq default-major-mode 'text-mode)    ;将缺省模式设置为text模式
+
+  (setq visible-bell nil)                 ;关闭错误操作时的窗口闪动警告
+  (setq make-pointer-invisible t)         ;输入时隐藏鼠标指针
+
+  (setq auto-image-file-mode t)           ;让emacs可以直接打开和显示图片
+
+  (setq vc-handled-backends '(Git SVN))   ;打开版本控制
+
+  (fset 'yes-or-no-p 'y-or-n-p)           ;用 y/n 替代 yes/no
+  (global-visual-line-mode 0)
+  #+END_SRC
+
+* 扩展安装和加载
+
+  定义一个变量，用来保存依赖的 packge 列表
+  #+BEGIN_SRC emacs-lisp
+  (setq my-package-list '())
+  #+END_SRC
+
+  这些是和界面、外观相关的一些插件
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(hlinum hlinum) t)
+  (add-to-list 'my-package-list '(nlinum nlinum) t)
+  (add-to-list 'my-package-list
+             '(highlight-parentheses highlight-parentheses)
+             t)
+  (add-to-list 'my-package-list '(hl-todo hl-todo) t)
+  (add-to-list 'my-package-list '(htmlize htmlize) t)
+  (add-to-list 'my-package-list '(pretty-symbols pretty-symbols) t)
+  (add-to-list 'my-package-list '(color-theme color-theme) t)
+  (add-to-list 'my-package-list '(powerline powerline) t)
+  (add-to-list 'my-package-list '(smart-mode-line smart-mode-line) t)
+  (add-to-list 'my-package-list
+             '(smart-mode-line-powerline-theme smart-mode-line-powerline-theme)
+             t)
+  (add-to-list 'my-package-list '(sr-speedbar sr-speedbar) t)
+  (add-to-list 'my-package-list '(color-theme-modern color-theme-morden) t)
+  #+END_SRC
+
+  各种 major-mode，包含一些编程语言的支持
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(emmet-mode emmet-mode) t)
+  (add-to-list 'my-package-list '(graphviz-dot-mode graphviz-dot-mode) t)
+  (add-to-list 'my-package-list '(js2-mode js2-mode) t)
+  (add-to-list 'my-package-list '(skewer-mode skewer-mode) t)
+  (add-to-list 'my-package-list '(markdown-mode markdown-mode) t)
+  (add-to-list 'my-package-list '(slime slime) t)
+  #+END_SRC
+
+  org-mode 相关
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(ob org-plus-contrib) t)
+  (add-to-list 'my-package-list '(org-ref org-ref) t)
+  ; (add-to-list 'my-package-list '(org-zotxt org-zotxt) t)
+  (add-to-list 'my-package-list '(ob-ipython ob-ipython) t)
+  (add-to-list 'my-package-list '(epresent epresent) t)
+  (add-to-list 'my-package-list '(org-bullets org-bullets) t)
+  #+END_SRC
+
+  下面的则是一些效率相关的插件
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(smex smex) t)
+  (add-to-list 'my-package-list '(ag ag) t)
+  (add-to-list 'my-package-list '(counsel counsel) t)
+  (add-to-list 'my-package-list '(avy avy) t)
+  (add-to-list 'my-package-list '(expand-region expand-region) t)
+  (add-to-list 'my-package-list '(helm-utils helm) t)
+  (add-to-list 'my-package-list '(helm helm-core) t)
+  (add-to-list 'my-package-list '(helm-ag helm-ag) t)
+  (add-to-list 'my-package-list '(helm-org-rifle helm-org-rifle) t)
+  (add-to-list 'my-package-list '(swiper ivy) t)
+  (add-to-list 'my-package-list '(magit magit) t)
+  #+END_SRC
+
+  自动补全
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(yasnippet yasnippet) t)
+  #+END_SRC
+
+  载入一些内建的功能，以及系统外插件
+  #+BEGIN_SRC emacs-lisp
+  (require 'font-lock)
+  (require 'electric)
+  (load-library "hideshow")
+
+  (add-to-list 'load-path "/usr/share/emacs/site-lisp/ccrypt/")
+  (require 'ps-ccrypt)                    ;from `apt-get install ccrypt`
+
+  (add-to-list 'load-path "/usr/share/emacs/site-lisp/global/")
+  (require 'gtags)                        ;from `apt-get install global`
+  #+END_SRC
+
+  检查插件，如果无法找到则进行安装
+  #+BEGIN_SRC emacs-lisp
+    (dolist (pkg-info my-package-list)
+      (when (not (require (nth 0 pkg-info) nil :noerror))
+        (progn
+        (message "install %s now..." (symbol-name (nth 1 pkg-info)))
+        (setq url-http-attempt-keepalives nil)
+        (package-refresh-contents)
+        (package-install (nth 1 pkg-info)))))
+  #+END_SRC
+
+* 外观设置
+
+** 字体
+
+   #+BEGIN_SRC emacs-lisp
+   (set-language-environment 'UTF-8)
+   (set-locale-environment "UTF-8")
+   (set-default-font "Dejavu Sans Mono 10")
+   (set-fontset-font "fontset-default" 'unicode "WenQuanYi Micro Hei Mono 12");
+   #+END_SRC
+
+** 界面
+
+   基本界面定制
+   #+BEGIN_SRC emacs-lisp
+   (setq initial-scratch-message "")               ;将 scratch 中的内容置空
+   (setq inhibit-startup-message t)                ;关闭启动画面
+   (setq frame-title-format "[%b]")                ;显示buffer的名字
+   (setq user-full-name "Linusp")                  ;用户名
+   (setq user-mail-address "linusp1024@gmail.com") ;用户邮箱
+   (setq display-time-24hr-format  t)              ;设置为24小时制
+   (setq display-time-day-and-date t)              ;显示日期
+   (setq display-time-interval 1)
+
+   (column-number-mode 0)                  ;显示列号
+   (tool-bar-mode 0)                       ;关闭工具栏
+   (menu-bar-mode 0)                       ;关闭菜单栏
+   (scroll-bar-mode 0)                     ;关闭滚动条
+   (blink-cursor-mode 0)                   ;关闭光标闪烁
+   (global-nlinum-mode 1)                  ;显示行号
+   (column-number-mode 1)                  ;显示列号
+   (display-time)                          ;显示时间
+   (hlinum-activate)                       ;高亮当前行号
+   (modify-all-frames-parameters           ;使用更好看的光标
+    (list (cons 'cursor-type 'bar)))
+   #+END_SRC
+
+   空白符显示设置，主要是把制表符啊、多余的空格啊这种高亮一下
+   #+BEGIN_SRC emacs-lisp
+   (setq whitespace-style '(face tabs trailing tab-mark)) ;高亮制表符、结尾冗余空格
+   (setq whitespace-display-mappings
+         '((space-mark 32 [32] [183] [46])
+           (space-mark 160 [164] [95])
+           (space-mark 2208 [2212] [95])
+           (space-mark 2336 [2340] [95])
+           (space-mark 3616 [3620] [95])
+           (space-mark 3872 [3876] [95])
+           (newline-mark 10 [182 10] [36 10])
+           (tab-mark 9 [187 9] [92 9])))
+   (global-whitespace-mode t)
+   #+END_SRC
+
+   加载自定义 color-theme
+   #+BEGIN_SRC emacs-lisp
+   (add-to-list 'load-path "~/.emacs.d/themes/")
+   (require 'color-theme-tomorrow)
+   (require 'color-theme-dust)
+   (require 'color-theme-ada)
+   (require 'color-theme-smoothy)
+   (require 'color-theme-mossysparks)
+   #+END_SRC
+
+   安装额外的 color-theme
+   #+BEGIN_SRC emacs-lisp
+   (package-install 'hydandata-light-theme)
+   #+END_SRC
+
+   主题设置，包含 color-theme 和 mode-line 的美化
+   #+BEGIN_SRC emacs-lisp
+   (load-theme 'hydandata-light t)
+   (setq sml/name-width 20)         ;mode-line 文件名最大长度
+   (setq sml/mode-width 'nil)       ;mode-line 中不显示 minor-mode
+   (setq sml/shorten-directory t)   ;mode-line 中文件名超出长度时折叠
+   (setq sml/shorten-modes t)       ;mode-line 中 mode 信息超出长度时折叠
+   (setq sml/no-confirm-load-theme t)
+   (sml/setup)
+   (setq powerline-arrow-shape 'curve)
+   (setq powerline-default-separator-dir '(right . left))
+   (sml/apply-theme 'light-powerline)
+   (add-to-list 'sml/replacer-regexp-list '("^~/Projects/" ":P:"))
+   (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/" ":DB:"))
+   (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/org" ":ORG:"))
+   #+END_SRC
+
+   speedbar 的设置，嗯，其实我都不怎么用 speedbar 来着。
+   #+BEGIN_SRC emacs-lisp
+   (setq speedbar-show-unknown-files t)
+   (setq speedbar-use-images nil)
+   (setq sr-speedbar-right-side nil)
+   #+END_SRC
+
+   然后默认将 Emacs 最大化
+   #+BEGIN_SRC emacs-lisp
+   (toggle-frame-maximized)
+   #+END_SRC
+
+* TODO 功能增强
+
+  #+BEGIN_SRC emacs-lisp
+  (smex-initialize)
+  (global-set-key (kbd "M-x") 'smex)
+  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+  (ido-mode t)
+  (setq windmove-wrap-around t)
+  #+END_SRC
+
+* TODO Org-mode 设置
+
+** 基础设置
+
+   org-mode 的基本设置
+   #+BEGIN_SRC emacs-lisp
+   (add-to-list 'auto-mode-alist '("\\.txt\\'" . org-mode))
+   (defun my-org-mode-config ()
+     (setq org-edit-src-content-indentation 0
+           org-src-tab-acts-natively t
+           org-src-fontify-natively t
+           org-confirm-babel-evaluate nil
+           org-startup-with-inline-images t
+           truncate-lines nil
+           org-export-with-sub-superscripts '{}
+           org-hide-emphasis-markers t
+           org-image-actual-width nil
+           org-completion-use-ido t
+           )
+     (org-bullets-mode 1)
+     )
+   (add-hook 'org-mode-hook 'my-org-mode-config)
+   (font-lock-add-keywords 'org-mode
+                           '(("^ +\\([-*]\\) "
+                              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+   #+END_SRC
+
+** babel 设置
+
+   更好地显示 babel 的 source block，来自: [[https://pank.eu/blog/pretty-babel-src-blocks.html][pretty org babel blocks]]
+   #+BEGIN_SRC emacs-lisp
+   (with-eval-after-load 'org
+     (defvar-local rasmus/org-at-src-begin -1
+       "Variable that holds whether last position was a ")
+
+     (defvar rasmus/ob-header-symbol ?☰
+       "Symbol used for babel headers")
+
+     (defun rasmus/org-prettify-src--update ()
+       (let ((case-fold-search t)
+             (re "^[ \t]*#\\+begin_src[ \t]+[^ \f\t\n\r\v]+[ \t]*")
+             found)
+         (save-excursion
+           (goto-char (point-min))
+           (while (re-search-forward re nil t)
+             (goto-char (match-end 0))
+             (let ((args (org-trim
+                          (buffer-substring-no-properties (point)
+                                                          (line-end-position)))))
+               (when (org-string-nw-p args)
+                 (let ((new-cell (cons args rasmus/ob-header-symbol)))
+                   (cl-pushnew new-cell prettify-symbols-alist :test #'equal)
+                   (cl-pushnew new-cell found :test #'equal)))))
+           (setq prettify-symbols-alist
+                 (cl-set-difference prettify-symbols-alist
+                                    (cl-set-difference
+                                     (cl-remove-if-not
+                                      (lambda (elm)
+                                        (eq (cdr elm) rasmus/ob-header-symbol))
+                                      prettify-symbols-alist)
+                                     found :test #'equal)))
+           ;; Clean up old font-lock-keywords.
+           (font-lock-remove-keywords nil prettify-symbols--keywords)
+           (setq prettify-symbols--keywords (prettify-symbols--make-keywords))
+           (font-lock-add-keywords nil prettify-symbols--keywords)
+           (while (re-search-forward re nil t)
+             (font-lock-flush (line-beginning-position) (line-end-position))))))
+
+     (defun rasmus/org-prettify-src ()
+       "Hide src options via `prettify-symbols-mode'.
+
+     `prettify-symbols-mode' is used because it has uncollpasing. It's
+     may not be efficient."
+       (let* ((case-fold-search t)
+              (at-src-block (save-excursion
+                              (beginning-of-line)
+                              (looking-at "^[ \t]*#\\+begin_src[ \t]+[^ \f\t\n\r\v]+[ \t]*"))))
+         ;; Test if we moved out of a block.
+         (when (or (and rasmus/org-at-src-begin
+                        (not at-src-block))
+                   ;; File was just opened.
+                   (eq rasmus/org-at-src-begin -1))
+           (rasmus/org-prettify-src--update))
+         (setq rasmus/org-at-src-begin at-src-block)))
+
+     (defun rasmus/org-prettify-symbols ()
+       (mapc (apply-partially 'add-to-list 'prettify-symbols-alist)
+             (cl-reduce 'append
+                        (mapcar (lambda (x) (list x (cons (upcase (car x)) (cdr x))))
+                                `(("#+begin_src" . ?✎) ;; ✎
+                                  ("#+end_src"   . ?□) ;; ⏹
+                                  ("#+header:" . ,rasmus/ob-header-symbol)
+                                  ("#+begin_quote" . ?»)
+                                  ("#+end_quote" . ?«)))))
+       (turn-on-prettify-symbols-mode)
+       (add-hook 'post-command-hook 'rasmus/org-prettify-src t t))
+     (add-hook 'org-mode-hook #'rasmus/org-prettify-symbols))
+   #+END_SRC
+
+   org-babel 的语言设置
+   #+BEGIN_SRC emacs-lisp
+   (org-babel-do-load-languages
+    'org-babel-load-languages '((dot . t)
+                                (ditaa . t)
+                                (lisp . t)
+                                (octave . t)
+                                (gnuplot . t)
+                                (python . t)
+                                (C . t)
+                                (shell . t)
+                                (java . t)
+                                (latex . t)
+                                (clojure . t)
+                                (emacs-lisp . t))
+    )
+   #+end_src
+
+** GTD 相关
+
+   #+BEGIN_SRC emacs-lisp
+   (setq org-enforce-todo-dependencies nil
+         org-agenda-ndays 1
+         org-log-done t
+         oxtrg-clock-into-drawer t
+         org-tags-column -100
+         org-directory "~/Dropbox/org"
+         org-default-notes-file (concat org-directory "/inbox.org")
+         org-todo-keywords '((sequence "TODO(t)"
+                                       "NEXT(n)"
+                                       "|" "DONE(d@/!)" "ABORT(a@/!)"))
+         org-agenda-files (list "~/Dropbox/org/task.org" "~/Dropbox/org/inbox.org")
+         org-capture-templates '(("n" "New"
+                                  entry (file+headline
+                                         "~/Dropbox/org/inbox.org"
+                                         "Inbox")
+                                  "** %? %t %^g\n %i %a\n")
+                                 ("N" "Notes"
+                                  entry (file
+                                         "~/Dropbox/org/notes.org")
+                                  "* %? %t %^g\n %i\n")
+                                 ("i" "Idea"
+                                  entry (file+headline
+                                         "~/Dropbox/org/inbox.org"
+                                         "Ideas")
+                                  "** %? %t %^g\n %i\n")
+                                 ("w" "Work"
+                                  entry (file+headline
+                                         "~/Dropbox/org/task.org"
+                                         "Work")
+                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
+                                 ("W" "Writing(novels or blog)"
+                                  entry (file+headline
+                                         "~/Dropbox/org/task.org"
+                                         "Writing(novels or blog)")
+                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
+                                 ("l" "Life"
+                                  entry (file+headline
+                                         "~/Dropbox/org/task.org"
+                                         "Life")
+                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
+                                 ("r" "Reading & Studying"
+                                  entry (file+headline
+                                         "~/Dropbox/org/task.org"
+                                         "Reading, Studying")
+                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
+                                 ("p" "Project"
+                                  entry (file+headline
+                                         "~/Dropbox/org/task.org"
+                                         "Project")
+                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
+                                 )
+
+         )
+   ;; 将项目转接在各文件之间，方便清理和回顾。
+   (setq org-refile-use-outline-path 'file)
+   (setq org-refile-targets
+         '((org-agenda-files :level . 1)
+           ("evernote.txt" :level . 1)
+           ("list.org" :level . 1)
+           ("notes.org" :level . 1)))
+   ;; Set to the name of the file where new notes will be stored
+   (setq org-mobile-inbox-for-pull "~/Dropbox/org/inbox.org")
+   #+END_SRC
+
+** 写作设置
+
+   #+BEGIN_SRC emacs-lisp
+   (defvar post-dir "~/Dropbox/org/blog/_posts/")
+   (defun blog-post (title)
+     (interactive "sEnter title: ")
+     (let ((post-file (concat post-dir
+                              (format-time-string "%Y-%m-%d")
+                              "-"
+                              title
+                              ".org")))
+       (progn
+         (switch-to-buffer (find-file-noselect post-file))
+         (insert (concat "#+startup: showall\n"
+                         "#+options: toc:nil\n"
+                         "#+begin_html\n"
+                         "---\n"
+                         "layout     : post\n"
+                         "title      : \n"
+                         "categories : \n"
+                         "tags       : \n"
+                         "---\n"
+                         "#+end_html\n"
+                         "#+TOC: headlines 2\n")))
+       ))
+   (defun publish-project (project no-cache)
+     (interactive "sName of project: \nsNo-cache?[y/n] ")
+     (if (or (string= no-cache "y")
+             (string= no-cache "Y"))
+         (setq org-publish-use-timestamps-flag nil))
+     (org-publish-project project)
+     (setq org-publish-use-timestamps-flag t))
+
+      ;;;; PUBLISH(org)
+   (setq org-export-default-language "zh-CN")
+   (setq org-publish-project-alist
+         '(("blog-org"
+            ;; Path to your org files.
+            :base-directory "~/Dropbox/org/blog/"
+            :base-extension "org"
+            ;; Path to your Jekyll project.
+            :publishing-directory "~/Projects/github-pages/"
+            :recursive t
+            :htmlized-source t
+            :section-numbers nil
+            :publishing-function org-html-publish-to-html
+            :headline-levels 4
+            :html-extension "html"
+            :body-only t; Only export section between <body> </body>
+            :table-of-contents nil
+            )
+           ("blog-static"
+            :base-directory "~/Dropbox/org/blog/"
+            :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|php"
+            :publishing-directory "~/Projects/github-pages/"
+            :recursive t
+            :publishing-function org-publish-attachment
+            )
+           ("blog" :components ("blog-org" "blog-static"))))
+
+   #+END_SRC
+
+** 论文管理
+
+   #+BEGIN_SRC emacs-lisp
+   (setq reftex-default-bibliography '("~/Dropbox/bibliography/references.bib")) ;
+
+   ;; see org-ref for use of these variables
+   (setq org-ref-default-bibliography '("~/Dropbox/bibliography/references.bib")
+         org-ref-bibliography-notes "~/Dropbox/bibliography/notes.org"
+         org-ref-pdf-directory "~/Dropbox/bibliography/bibtex-pdfs/")
+
+   (setq bibtex-completion-bibliography "~/Dropbox/bibliography/references.bib"
+         bibtex-completion-library-path "~/Dropbox/bibliography/bibtex-pdfs/")
+   #+END_SRC
+
+* TODO 编程设置
+
+** 杂项
+
+   #+BEGIN_SRC emacs-lisp
+   (electric-pair-mode t)                                   ;开启自动括号补全
+   (electric-indent-mode t)                                 ;开启智能缩进
+   (electric-layout-mode 0)                                 ;关闭智能自动换行
+   (global-font-lock-mode 1)                                ;开启全局语法高亮
+   (setq default-tab-width 4)
+   (setq-default indent-tabs-mode nil)
+   (add-hook 'prog-mode-hook 'hl-todo-mode)                 ;高亮 TODO 等单词
+   (add-hook 'prog-mode-hook 'pretty-symbols-mode)          ;显示 Unicode 字符
+   (dolist (command '(yank yank-pop))
+     (eval
+      `(defadvice ,command (after indent-region activate)
+         (and (not current-prefix-arg)
+              (member major-mode
+                      '(emacs-lisp-mode
+            lisp-mode
+            scheme-mode
+            python-mode
+            c-mode
+            c++-mode
+            latex-mode
+            plain-tex-mode))
+              (let ((mark-even-if-inactive
+                     transient-mark-mode))
+        (indent-region (region-beginning)
+                               (region-end) nil))))))
+   #+END_SRC
+
+** 模板和自动补全
+
+   #+BEGIN_SRC emacs-lisp
+   (yas-global-mode 1)
+   (yas-minor-mode-on)
+   (define-key yas-minor-mode-map [(tab)] nil)
+   (define-key yas-minor-mode-map (kbd "TAB") nil)
+   (define-key yas-minor-mode-map (kbd "C-;") 'yas-expand)
+   #+END_SRC
+
+** C/C++
+
+   #+BEGIN_SRC emacs-lisp
+   (c-add-style "linusp"
+                '((c-basic-offset . 4)
+                  (c-comment-only-line-offset . 0)
+                  (c-hanging-braces-alist
+                   (brace-list-open)
+                   (brace-entry-open)
+                   (substatement-open after)
+                   (block-close . c-snug-do-while)
+                   (arglist-cont-nonempty))
+                  (c-cleanup-list brace-else-brace)
+                  (c-offsets-alist
+                   (case-label . +)
+                   (statement-block-intro . +)
+                   (knr-argdecl-intro . 0)
+                   (substatement-open . 0)
+                   (substatement-label . 0)
+                   (label . 0)
+                   (statement-cont . +))))
+   (defun gtags-root-dir ()
+    "Returns GTAGS root directory or nil if doesn't exist."
+    (with-temp-buffer
+      (if (zerop (call-process "global" nil t nil "-pr"))
+          (buffer-substring (point-min) (1- (point-max)))
+        nil)))
+   (setq c-default-style "linusp")
+   (defun my-cc-mode-config ()
+     (setq c-toggle-auto-state t
+           c-basic-offset      4          ;缩进宽度为4
+           default-tab-width   4          ;制表符宽度为4
+           indent-tabs-mode    nil        ;不使用tab键缩进
+           )
+     (linum-mode t)
+     (hs-minor-mode t)
+     (whitespace-mode t)
+     (gtags-mode t)
+     (hl-line-mode t)
+     ;; (hidden-minor-mode)
+     (highlight-parentheses-mode t))
+   (add-hook 'c-mode-hook 'my-cc-mode-config)
+   (add-hook 'c++-mode-hook 'my-cc-mode-config)
+   #+END_SRC
+
+** Python
+
+   #+BEGIN_SRC emacs-lisp
+   (defun my-python-mode-config ()
+     (setq python-indent-offset 4
+           python-indent 4
+           indent-tabs-mode nil
+           default-tab-width 4)
+     (hs-minor-mode t)
+     (auto-fill-mode 0)
+     (whitespace-mode t)
+     (hl-line-mode t)
+     (pretty-symbols-mode t)
+     ;; (local-set-key (kbd "C-;") 'jedi:complete)
+     ;; (hidden-minor-mode)
+     (set (make-local-variable 'electric-indent-mode) nil))
+   (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
+   (add-to-list 'auto-mode-alist '("SConstruct" . python-mode))
+   (setq python-shell-interpreter "python"
+         python-shell-interpreter-args ""
+         python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+         python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+         python-shell-completion-setup-code "from IPython.core.completerlib import module_completion"
+         python-shell-completion-module-string-code "';'.join(module_completion('''%s'''))\n"
+         python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
+   (add-hook 'python-mode-hook 'my-python-mode-config)
+   ;; (add-hook 'python-mode-hook 'jedi:setup)
+   #+END_SRC
+
+** Lisp
+
+   #+BEGIN_SRC emacs-lisp
+   (defun lisp-mode-config ()
+     (highlight-parentheses-mode t)
+     (hs-minor-mode t)
+     (hl-line-mode t)
+     (whitespace-mode t)
+     (pretty-symbols-mode t)
+     (set (make-local-variable 'electric-pair-mode) nil)
+     )
+   ;; My slime
+   (defun my-slime ()
+     (interactive)
+     (slime)
+     (delete-other-windows))
+   ;; CL
+   (setq slime-lisp-implementations '((sbcl ("sbcl"))))
+   (setq inferior-lisp-program "sbcl")
+   (slime-setup '(slime-fancy))
+   (add-hook 'emacs-lisp-mode-hook 'lisp-mode-config)  ;Emacs Lisp
+   (add-hook 'lisp-mode-hook       'lisp-mode-config)  ;Common Lisp
+   (add-hook 'slime-repl-mode      'lisp-mode-config)  ;Slime REPL
+   (add-hook 'inferior-octave-mode-hook
+             (lambda ()
+               (turn-on-font-lock)
+               (define-key inferior-octave-mode-map [up]
+                 'comint-previous-input)
+               (define-key inferior-octave-mode-map [down]
+                 'comint-next-input)))
+   #+END_SRC
+
+** Golang
+
+   #+BEGIN_SRC emacs-lisp
+   (defun my-go-mode-hook ()
+     ;; Call Gofmt before saving
+     (add-hook 'before-save-hook 'gofmt-before-save)
+     ;; Godef jump key binding
+     (local-set-key (kbd "M-.") 'godef-jump))
+   (add-hook 'go-mode-hook 'my-go-mode-hook)
+   #+END_SRC
+
+* TODO 其他
+
+** Edit Serevr
+
+   配合 Chrome 的 Edit with Emacs 插件可以在需要输入、编辑时调用 Emacs
+   #+BEGIN_SRC emacs-lisp
+   (when (require 'edit-server nil t)
+     (setq edit-server-new-frame nil)
+     (edit-server-start))
+
+   (add-hook 'edit-server-start-hook
+             (lambda ()
+               (when (or (string-match "github.com" (buffer-name))
+                         (string-match "gitlab.com" (buffer-name))
+                         (string-match "bearychat.com" (buffer-name)))
+                 (markdown-mode))))
+   #+END_SRC
+
+* TODO 扩展无关的函数定义
 
 ** 对注释和反注释的改进
 
-   默认的注释行为是按下 'M-;' 后对所在行进行注释，但经常还会需要 *将某行注释掉* ，这里定义了一个为某行添加注释或者注释莫行的方法。
+   默认的注释行为是按下 'M-;' 后对所在行进行注释，但经常还会需要 *将某行注释掉* ，这里定义了一个为某行添加注释或者注释某行的方法。
    #+BEGIN_SRC emacs-lisp
    (defun comment-dwim-line (&optional arg)
      (interactive "*P")
@@ -91,3 +774,48 @@
      (interactive)
      (occur "[^[:ascii:]]"))
    #+END_SRC
+
+* TODO 全局快捷键设置
+
+  #+BEGIN_SRC emacs-lisp
+  (global-set-key [f2]  'hs-toggle-hiding)
+  (global-set-key [f3]  'bookmark-set)
+  (global-set-key [f4]  'bookmark-bmenu-list)
+  (global-set-key [f7]  'eval-buffer)
+  (global-set-key [f8]  'eval-last-sexp)
+  (global-set-key [f11] 'toggle-frame-fullscreen)
+  (global-set-key [f12] 'toggle-frame-maximized)
+
+  (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
+  (global-set-key (kbd "C-x k") 'kill-this-buffer)
+
+  ;; 用于编辑的一些快捷键
+  (global-set-key (kbd "M-p") 'move-line-region-up)
+  (global-set-key (kbd "M-n") 'move-line-region-down)
+  (global-set-key (kbd "C-z") 'delete-trailing-whitespace)
+
+  ;; 选择
+  (global-set-key (kbd "C-M-SPC") 'set-mark-command)
+  (global-set-key (kbd "C-=") 'er/expand-region)
+
+  ;; 搜索，快速定位
+  (global-set-key (kbd "C-c j") 'avy-goto-word-or-subword-1)
+  (global-set-key (kbd "C-c h o") 'helm-org-rifle)  ;搜索 org 文件
+  (global-set-key (kbd "C-c h s") 'helm-do-grep-ag) ;使用 ag 搜索目录
+  (global-set-key (kbd "C-s") 'swiper)              ;不使用内置的 search 而是使用 swiper
+  (setq ivy-display-style 'fancy)
+
+  ;; coding
+  (global-set-key (kbd "M-;") 'comment-dwim-line)
+  (global-set-key (kbd "C-c s") 'sr-speedbar-toggle)
+
+  ;; org-mode
+  (global-set-key (kbd "C-c a") 'org-agenda-list)
+  (global-set-key (kbd "C-c b") 'org-iswitchb)
+  (global-set-key (kbd "C-c c") 'org-capture)
+  (global-set-key (kbd "C-c l") 'org-store-link)
+  (global-set-key (kbd "C-c m") 'org-tags-view)
+  (global-set-key (kbd "C-c p") 'blog-post)
+  (global-set-key (kbd "C-c q") 'publish-project)
+  (global-set-key (kbd "C-c t") 'org-todo-list)
+  #+END_SRC
