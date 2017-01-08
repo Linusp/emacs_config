@@ -90,7 +90,7 @@
   #+BEGIN_SRC emacs-lisp
   (add-to-list 'my-package-list '(ob org-plus-contrib) t)
   (add-to-list 'my-package-list '(org-ref org-ref) t)
-  ; (add-to-list 'my-package-list '(org-zotxt org-zotxt) t)
+  (add-to-list 'my-package-list '(zotxt zotxt) t)
   (add-to-list 'my-package-list '(ob-ipython ob-ipython) t)
   (add-to-list 'my-package-list '(epresent epresent) t)
   (add-to-list 'my-package-list '(org-bullets org-bullets) t)
