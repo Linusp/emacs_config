@@ -1,5 +1,6 @@
 # Packaging
 .cask
+*.elc
 
 # tempfile
 *~
