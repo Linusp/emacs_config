@@ -246,266 +246,6 @@
   (setq windmove-wrap-around t)
   #+END_SRC
 
-* TODO Org-mode 设置
-
-** 基础设置
-
-   org-mode 的基本设置
-   #+BEGIN_SRC emacs-lisp
-   (add-to-list 'auto-mode-alist '("\\.txt\\'" . org-mode))
-   (defun my-org-mode-config ()
-     (setq org-edit-src-content-indentation 0
-           org-src-tab-acts-natively t
-           org-src-fontify-natively t
-           org-confirm-babel-evaluate nil
-           org-startup-with-inline-images t
-           truncate-lines nil
-           org-export-with-sub-superscripts '{}
-           org-hide-emphasis-markers t
-           org-image-actual-width nil
-           org-completion-use-ido t
-           )
-     (org-bullets-mode 1)
-     )
-   (add-hook 'org-mode-hook 'my-org-mode-config)
-   (font-lock-add-keywords 'org-mode
-                           '(("^ +\\([-*]\\) "
-                              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-   #+END_SRC
-
-** babel 设置
-
-   更好地显示 babel 的 source block，来自: [[https://pank.eu/blog/pretty-babel-src-blocks.html][pretty org babel blocks]]
-   #+BEGIN_SRC emacs-lisp
-   (with-eval-after-load 'org
-     (defvar-local rasmus/org-at-src-begin -1
-       "Variable that holds whether last position was a ")
-
-     (defvar rasmus/ob-header-symbol ?☰
-       "Symbol used for babel headers")
-
-     (defun rasmus/org-prettify-src--update ()
-       (let ((case-fold-search t)
-             (re "^[ \t]*#\\+begin_src[ \t]+[^ \f\t\n\r\v]+[ \t]*")
-             found)
-         (save-excursion
-           (goto-char (point-min))
-           (while (re-search-forward re nil t)
-             (goto-char (match-end 0))
-             (let ((args (org-trim
-                          (buffer-substring-no-properties (point)
-                                                          (line-end-position)))))
-               (when (org-string-nw-p args)
-                 (let ((new-cell (cons args rasmus/ob-header-symbol)))
-                   (cl-pushnew new-cell prettify-symbols-alist :test #'equal)
-                   (cl-pushnew new-cell found :test #'equal)))))
-           (setq prettify-symbols-alist
-                 (cl-set-difference prettify-symbols-alist
-                                    (cl-set-difference
-                                     (cl-remove-if-not
-                                      (lambda (elm)
-                                        (eq (cdr elm) rasmus/ob-header-symbol))
-                                      prettify-symbols-alist)
-                                     found :test #'equal)))
-           ;; Clean up old font-lock-keywords.
-           (font-lock-remove-keywords nil prettify-symbols--keywords)
-           (setq prettify-symbols--keywords (prettify-symbols--make-keywords))
-           (font-lock-add-keywords nil prettify-symbols--keywords)
-           (while (re-search-forward re nil t)
-             (font-lock-flush (line-beginning-position) (line-end-position))))))
-
-     (defun rasmus/org-prettify-src ()
-       "Hide src options via `prettify-symbols-mode'.
-
-     `prettify-symbols-mode' is used because it has uncollpasing. It's
-     may not be efficient."
-       (let* ((case-fold-search t)
-              (at-src-block (save-excursion
-                              (beginning-of-line)
-                              (looking-at "^[ \t]*#\\+begin_src[ \t]+[^ \f\t\n\r\v]+[ \t]*"))))
-         ;; Test if we moved out of a block.
-         (when (or (and rasmus/org-at-src-begin
-                        (not at-src-block))
-                   ;; File was just opened.
-                   (eq rasmus/org-at-src-begin -1))
-           (rasmus/org-prettify-src--update))
-         (setq rasmus/org-at-src-begin at-src-block)))
-
-     (defun rasmus/org-prettify-symbols ()
-       (mapc (apply-partially 'add-to-list 'prettify-symbols-alist)
-             (cl-reduce 'append
-                        (mapcar (lambda (x) (list x (cons (upcase (car x)) (cdr x))))
-                                `(("#+begin_src" . ?✎) ;; ✎
-                                  ("#+end_src"   . ?□) ;; ⏹
-                                  ("#+header:" . ,rasmus/ob-header-symbol)
-                                  ("#+begin_quote" . ?»)
-                                  ("#+end_quote" . ?«)))))
-       (turn-on-prettify-symbols-mode)
-       (add-hook 'post-command-hook 'rasmus/org-prettify-src t t))
-     (add-hook 'org-mode-hook #'rasmus/org-prettify-symbols))
-   #+END_SRC
-
-   org-babel 的语言设置
-   #+BEGIN_SRC emacs-lisp
-   (org-babel-do-load-languages
-    'org-babel-load-languages '((dot . t)
-                                (ditaa . t)
-                                (lisp . t)
-                                (octave . t)
-                                (gnuplot . t)
-                                (python . t)
-                                (C . t)
-                                (shell . t)
-                                (java . t)
-                                (latex . t)
-                                (clojure . t)
-                                (emacs-lisp . t))
-    )
-   #+end_src
-
-** GTD 相关
-
-   #+BEGIN_SRC emacs-lisp
-   (setq org-enforce-todo-dependencies nil
-         org-agenda-ndays 1
-         org-log-done t
-         oxtrg-clock-into-drawer t
-         org-tags-column -100
-         org-directory "~/Dropbox/org"
-         org-default-notes-file (concat org-directory "/inbox.org")
-         org-todo-keywords '((sequence "TODO(t)"
-                                       "NEXT(n)"
-                                       "|" "DONE(d@/!)" "ABORT(a@/!)"))
-         org-agenda-files (list "~/Dropbox/org/task.org" "~/Dropbox/org/inbox.org")
-         org-capture-templates '(("n" "New"
-                                  entry (file+headline
-                                         "~/Dropbox/org/inbox.org"
-                                         "Inbox")
-                                  "** %? %t %^g\n %i %a\n")
-                                 ("N" "Notes"
-                                  entry (file
-                                         "~/Dropbox/org/notes.org")
-                                  "* %? %t %^g\n %i\n")
-                                 ("i" "Idea"
-                                  entry (file+headline
-                                         "~/Dropbox/org/inbox.org"
-                                         "Ideas")
-                                  "** %? %t %^g\n %i\n")
-                                 ("w" "Work"
-                                  entry (file+headline
-                                         "~/Dropbox/org/task.org"
-                                         "Work")
-                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
-                                 ("W" "Writing(novels or blog)"
-                                  entry (file+headline
-                                         "~/Dropbox/org/task.org"
-                                         "Writing(novels or blog)")
-                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
-                                 ("l" "Life"
-                                  entry (file+headline
-                                         "~/Dropbox/org/task.org"
-                                         "Life")
-                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
-                                 ("r" "Reading & Studying"
-                                  entry (file+headline
-                                         "~/Dropbox/org/task.org"
-                                         "Reading, Studying")
-                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
-                                 ("p" "Project"
-                                  entry (file+headline
-                                         "~/Dropbox/org/task.org"
-                                         "Project")
-                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
-                                 )
-
-         )
-   ;; 将项目转接在各文件之间，方便清理和回顾。
-   (setq org-refile-use-outline-path 'file)
-   (setq org-refile-targets
-         '((org-agenda-files :level . 1)
-           ("evernote.txt" :level . 1)
-           ("list.org" :level . 1)
-           ("notes.org" :level . 1)))
-   ;; Set to the name of the file where new notes will be stored
-   (setq org-mobile-inbox-for-pull "~/Dropbox/org/inbox.org")
-   #+END_SRC
-
-** 写作设置
-
-   #+BEGIN_SRC emacs-lisp
-   (defvar post-dir "~/Dropbox/org/blog/_posts/")
-   (defun blog-post (title)
-     (interactive "sEnter title: ")
-     (let ((post-file (concat post-dir
-                              (format-time-string "%Y-%m-%d")
-                              "-"
-                              title
-                              ".org")))
-       (progn
-         (switch-to-buffer (find-file-noselect post-file))
-         (insert (concat "#+startup: showall\n"
-                         "#+options: toc:nil\n"
-                         "#+begin_html\n"
-                         "---\n"
-                         "layout     : post\n"
-                         "title      : \n"
-                         "categories : \n"
-                         "tags       : \n"
-                         "---\n"
-                         "#+end_html\n"
-                         "#+TOC: headlines 2\n")))
-       ))
-   (defun publish-project (project no-cache)
-     (interactive "sName of project: \nsNo-cache?[y/n] ")
-     (if (or (string= no-cache "y")
-             (string= no-cache "Y"))
-         (setq org-publish-use-timestamps-flag nil))
-     (org-publish-project project)
-     (setq org-publish-use-timestamps-flag t))
-
-      ;;;; PUBLISH(org)
-   (setq org-export-default-language "zh-CN")
-   (setq org-publish-project-alist
-         '(("blog-org"
-            ;; Path to your org files.
-            :base-directory "~/Dropbox/org/blog/"
-            :base-extension "org"
-            ;; Path to your Jekyll project.
-            :publishing-directory "~/Projects/github-pages/"
-            :recursive t
-            :htmlized-source t
-            :section-numbers nil
-            :publishing-function org-html-publish-to-html
-            :headline-levels 4
-            :html-extension "html"
-            :body-only t; Only export section between <body> </body>
-            :table-of-contents nil
-            )
-           ("blog-static"
-            :base-directory "~/Dropbox/org/blog/"
-            :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|php"
-            :publishing-directory "~/Projects/github-pages/"
-            :recursive t
-            :publishing-function org-publish-attachment
-            )
-           ("blog" :components ("blog-org" "blog-static"))))
-
-   #+END_SRC
-
-** 论文管理
-
-   #+BEGIN_SRC emacs-lisp
-   (setq reftex-default-bibliography '("~/Dropbox/bibliography/references.bib")) ;
-
-   ;; see org-ref for use of these variables
-   (setq org-ref-default-bibliography '("~/Dropbox/bibliography/references.bib")
-         org-ref-bibliography-notes "~/Dropbox/bibliography/notes.org"
-         org-ref-pdf-directory "~/Dropbox/bibliography/bibtex-pdfs/")
-
-   (setq bibtex-completion-bibliography "~/Dropbox/bibliography/references.bib"
-         bibtex-completion-library-path "~/Dropbox/bibliography/bibtex-pdfs/")
-   #+END_SRC
-
 * TODO 编程设置
 
 ** 杂项
@@ -665,6 +405,266 @@
    (add-hook 'go-mode-hook 'my-go-mode-hook)
    #+END_SRC
 
+* TODO Org-mode 设置
+
+** 基础设置
+
+   org-mode 的基本设置
+   #+BEGIN_SRC emacs-lisp
+   (add-to-list 'auto-mode-alist '("\\.txt\\'" . org-mode))
+   (defun my-org-mode-config ()
+     (setq org-edit-src-content-indentation 0
+           org-src-tab-acts-natively t
+           org-src-fontify-natively t
+           org-confirm-babel-evaluate nil
+           org-startup-with-inline-images t
+           truncate-lines nil
+           org-export-with-sub-superscripts '{}
+           org-hide-emphasis-markers t
+           org-image-actual-width nil
+           org-completion-use-ido t
+           )
+     (org-bullets-mode 1)
+     )
+   (add-hook 'org-mode-hook 'my-org-mode-config)
+   (font-lock-add-keywords 'org-mode
+                           '(("^ +\\([-*]\\) "
+                              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+   #+END_SRC
+
+** babel 设置
+
+   更好地显示 babel 的 source block，来自: [[https://pank.eu/blog/pretty-babel-src-blocks.html][pretty org babel blocks]]
+   #+BEGIN_SRC emacs-lisp
+   (with-eval-after-load 'org
+     (defvar-local rasmus/org-at-src-begin -1
+       "Variable that holds whether last position was a ")
+
+     (defvar rasmus/ob-header-symbol ?☰
+       "Symbol used for babel headers")
+
+     (defun rasmus/org-prettify-src--update ()
+       (let ((case-fold-search t)
+             (re "^[ \t]*#\\+begin_src[ \t]+[^ \f\t\n\r\v]+[ \t]*")
+             found)
+         (save-excursion
+           (goto-char (point-min))
+           (while (re-search-forward re nil t)
+             (goto-char (match-end 0))
+             (let ((args (org-trim
+                          (buffer-substring-no-properties (point)
+                                                          (line-end-position)))))
+               (when (org-string-nw-p args)
+                 (let ((new-cell (cons args rasmus/ob-header-symbol)))
+                   (cl-pushnew new-cell prettify-symbols-alist :test #'equal)
+                   (cl-pushnew new-cell found :test #'equal)))))
+           (setq prettify-symbols-alist
+                 (cl-set-difference prettify-symbols-alist
+                                    (cl-set-difference
+                                     (cl-remove-if-not
+                                      (lambda (elm)
+                                        (eq (cdr elm) rasmus/ob-header-symbol))
+                                      prettify-symbols-alist)
+                                     found :test #'equal)))
+           ;; Clean up old font-lock-keywords.
+           (font-lock-remove-keywords nil prettify-symbols--keywords)
+           (setq prettify-symbols--keywords (prettify-symbols--make-keywords))
+           (font-lock-add-keywords nil prettify-symbols--keywords)
+           (while (re-search-forward re nil t)
+             (font-lock-flush (line-beginning-position) (line-end-position))))))
+
+     (defun rasmus/org-prettify-src ()
+       "Hide src options via `prettify-symbols-mode'.
+
+     `prettify-symbols-mode' is used because it has uncollpasing. It's
+     may not be efficient."
+       (let* ((case-fold-search t)
+              (at-src-block (save-excursion
+                              (beginning-of-line)
+                              (looking-at "^[ \t]*#\\+begin_src[ \t]+[^ \f\t\n\r\v]+[ \t]*"))))
+         ;; Test if we moved out of a block.
+         (when (or (and rasmus/org-at-src-begin
+                        (not at-src-block))
+                   ;; File was just opened.
+                   (eq rasmus/org-at-src-begin -1))
+           (rasmus/org-prettify-src--update))
+         (setq rasmus/org-at-src-begin at-src-block)))
+
+     (defun rasmus/org-prettify-symbols ()
+       (mapc (apply-partially 'add-to-list 'prettify-symbols-alist)
+             (cl-reduce 'append
+                        (mapcar (lambda (x) (list x (cons (upcase (car x)) (cdr x))))
+                                `(("#+begin_src" . ?✎) ;; ✎
+                                  ("#+end_src"   . ?□) ;; ⏹
+                                  ("#+header:" . ,rasmus/ob-header-symbol)
+                                  ("#+begin_quote" . ?»)
+                                  ("#+end_quote" . ?«)))))
+       (turn-on-prettify-symbols-mode)
+       (add-hook 'post-command-hook 'rasmus/org-prettify-src t t))
+     (add-hook 'org-mode-hook #'rasmus/org-prettify-symbols))
+   #+END_SRC
+
+   org-babel 的语言设置
+   #+BEGIN_SRC emacs-lisp
+   (require 'ob-python)
+   (org-babel-do-load-languages
+    'org-babel-load-languages '((dot . t)
+                                (ditaa . t)
+                                (lisp . t)
+                                (octave . t)
+                                (gnuplot . t)
+                                (python . t)
+                                (C . t)
+                                (shell . t)
+                                (java . t)
+                                (latex . t)
+                                (clojure . t)
+                                (emacs-lisp . t))
+    )
+   #+end_src
+
+** GTD 相关
+
+   #+BEGIN_SRC emacs-lisp
+   (setq org-enforce-todo-dependencies nil
+         org-agenda-ndays 1
+         org-log-done t
+         oxtrg-clock-into-drawer t
+         org-tags-column -100
+         org-directory "~/Dropbox/org"
+         org-default-notes-file (concat org-directory "/inbox.org")
+         org-todo-keywords '((sequence "TODO(t)"
+                                       "NEXT(n)"
+                                       "|" "DONE(d@/!)" "ABORT(a@/!)"))
+         org-agenda-files (list "~/Dropbox/org/task.org" "~/Dropbox/org/inbox.org")
+         org-capture-templates '(("n" "New"
+                                  entry (file+headline
+                                         "~/Dropbox/org/inbox.org"
+                                         "Inbox")
+                                  "** %? %t %^g\n %i %a\n")
+                                 ("N" "Notes"
+                                  entry (file
+                                         "~/Dropbox/org/notes.org")
+                                  "* %? %t %^g\n %i\n")
+                                 ("i" "Idea"
+                                  entry (file+headline
+                                         "~/Dropbox/org/inbox.org"
+                                         "Ideas")
+                                  "** %? %t %^g\n %i\n")
+                                 ("w" "Work"
+                                  entry (file+headline
+                                         "~/Dropbox/org/task.org"
+                                         "Work")
+                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
+                                 ("W" "Writing(novels or blog)"
+                                  entry (file+headline
+                                         "~/Dropbox/org/task.org"
+                                         "Writing(novels or blog)")
+                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
+                                 ("l" "Life"
+                                  entry (file+headline
+                                         "~/Dropbox/org/task.org"
+                                         "Life")
+                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
+                                 ("r" "Reading & Studying"
+                                  entry (file+headline
+                                         "~/Dropbox/org/task.org"
+                                         "Reading, Studying")
+                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
+                                 ("p" "Project"
+                                  entry (file+headline
+                                         "~/Dropbox/org/task.org"
+                                         "Project")
+                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
+                                 )
+
+         )
+   ;; 将项目转接在各文件之间，方便清理和回顾。
+   (setq org-refile-use-outline-path 'file)
+   (setq org-refile-targets
+         '((org-agenda-files :level . 1)
+           ("evernote.txt" :level . 1)
+           ("list.org" :level . 1)
+           ("notes.org" :level . 1)))
+   ;; Set to the name of the file where new notes will be stored
+   (setq org-mobile-inbox-for-pull "~/Dropbox/org/inbox.org")
+   #+END_SRC
+
+** 写作设置
+
+   #+BEGIN_SRC emacs-lisp
+   (defvar post-dir "~/Dropbox/org/blog/_posts/")
+   (defun blog-post (title)
+     (interactive "sEnter title: ")
+     (let ((post-file (concat post-dir
+                              (format-time-string "%Y-%m-%d")
+                              "-"
+                              title
+                              ".org")))
+       (progn
+         (switch-to-buffer (find-file-noselect post-file))
+         (insert (concat "#+startup: showall\n"
+                         "#+options: toc:nil\n"
+                         "#+begin_export html\n"
+                         "---\n"
+                         "layout     : post\n"
+                         "title      : \n"
+                         "categories : \n"
+                         "tags       : \n"
+                         "---\n"
+                         "#+end_export\n"
+                         "#+TOC: headlines 2\n")))
+       ))
+   (defun publish-project (project no-cache)
+     (interactive "sName of project: \nsNo-cache?[y/n] ")
+     (if (or (string= no-cache "y")
+             (string= no-cache "Y"))
+         (setq org-publish-use-timestamps-flag nil))
+     (org-publish-project project)
+     (setq org-publish-use-timestamps-flag t))
+
+      ;;;; PUBLISH(org)
+   (setq org-export-default-language "zh-CN")
+   (setq org-publish-project-alist
+         '(("blog-org"
+            ;; Path to your org files.
+            :base-directory "~/Dropbox/org/blog/"
+            :base-extension "org"
+            ;; Path to your Jekyll project.
+            :publishing-directory "~/Projects/github-pages/"
+            :recursive t
+            :htmlized-source t
+            :section-numbers nil
+            :publishing-function org-html-publish-to-html
+            :headline-levels 4
+            :html-extension "html"
+            :body-only t; Only export section between <body> </body>
+            :table-of-contents nil
+            )
+           ("blog-static"
+            :base-directory "~/Dropbox/org/blog/"
+            :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|php"
+            :publishing-directory "~/Projects/github-pages/"
+            :recursive t
+            :publishing-function org-publish-attachment
+            )
+           ("blog" :components ("blog-org" "blog-static"))))
+
+   #+END_SRC
+
+** 论文管理
+
+   #+BEGIN_SRC emacs-lisp
+   (setq reftex-default-bibliography '("~/Dropbox/bibliography/references.bib")) ;
+
+   ;; see org-ref for use of these variables
+   (setq org-ref-default-bibliography '("~/Dropbox/bibliography/references.bib")
+         org-ref-bibliography-notes "~/Dropbox/bibliography/notes.org"
+         org-ref-pdf-directory "~/Dropbox/bibliography/bibtex-pdfs/")
+
+   (setq bibtex-completion-bibliography "~/Dropbox/bibliography/references.bib"
+         bibtex-completion-library-path "~/Dropbox/bibliography/bibtex-pdfs/")
+   #+END_SRC
 * TODO 其他
 
 ** Edit Serevr
