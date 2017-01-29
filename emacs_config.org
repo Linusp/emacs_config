@@ -9,7 +9,7 @@
 
   临时文件设置
   #+BEGIN_SRC emacs-lisp
-  (setq make-backup-file nil)
+  (setq make-backup-files nil)
   (setq backup-inhibited t)               ;不产生备份
   (setq auto-save-list-file-prefix nil)
   (setq auto-save-default nil)            ;不生成 #fname# 格式的临时文件
