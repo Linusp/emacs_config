@@ -432,6 +432,12 @@
                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
    #+END_SRC
 
+   设置默认的 org 文件
+   #+BEGIN_SRC emacs-lisp
+   (setq org-directory "~/Dropbox/org")
+   (setq org-default-notes-file (concat org-directory "/inbox.org"))
+   #+END_SRC
+
 ** babel 设置
 
    更好地显示 babel 的 source block，来自: [[https://pank.eu/blog/pretty-babel-src-blocks.html][pretty org babel blocks]]
@@ -525,69 +531,109 @@
 
 ** GTD 相关
 
+   设置基础的任务状态关键词，其中 "DONE" 和 "ABORT" 表示终结状态，并且用 "@" 设置为在进入终结状态时，要求输入笔记；用 "!" 设置从终结状态变化为其他状态时自动添加变更信息。
    #+BEGIN_SRC emacs-lisp
-   (setq org-enforce-todo-dependencies nil
-         org-agenda-ndays 1
-         org-log-done t
-         oxtrg-clock-into-drawer t
-         org-tags-column -100
-         org-directory "~/Dropbox/org"
-         org-default-notes-file (concat org-directory "/inbox.org")
-         org-todo-keywords '((sequence "TODO(t)"
-                                       "NEXT(n)"
-                                       "|" "DONE(d@/!)" "ABORT(a@/!)"))
-         org-agenda-files (list "~/Dropbox/org/task.org" "~/Dropbox/org/inbox.org")
-         org-capture-templates '(("n" "New"
-                                  entry (file+headline
-                                         "~/Dropbox/org/inbox.org"
-                                         "Inbox")
-                                  "** %? %t %^g\n %i %a\n")
-                                 ("N" "Notes"
-                                  entry (file
-                                         "~/Dropbox/org/notes.org")
-                                  "* %? %t %^g\n %i\n")
-                                 ("i" "Idea"
-                                  entry (file+headline
-                                         "~/Dropbox/org/inbox.org"
-                                         "Ideas")
-                                  "** %? %t %^g\n %i\n")
-                                 ("w" "Work"
-                                  entry (file+headline
-                                         "~/Dropbox/org/task.org"
-                                         "Work")
-                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
-                                 ("W" "Writing(novels or blog)"
-                                  entry (file+headline
-                                         "~/Dropbox/org/task.org"
-                                         "Writing(novels or blog)")
-                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
-                                 ("l" "Life"
-                                  entry (file+headline
-                                         "~/Dropbox/org/task.org"
-                                         "Life")
-                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
-                                 ("r" "Reading & Studying"
-                                  entry (file+headline
-                                         "~/Dropbox/org/task.org"
-                                         "Reading, Studying")
-                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
-                                 ("p" "Project"
-                                  entry (file+headline
-                                         "~/Dropbox/org/task.org"
-                                         "Project")
-                                  "** TODO %? %^g\n   SCHEDULED: %t\n %i\n")
-                                 )
+   (setq org-use-fast-todo-selection t)
+   (setq org-todo-keywords '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d@/!)" "ABORT(a@/!)")))
+   (setq org-log-done t)
+   #+END_SRC
 
-         )
-   ;; 将项目转接在各文件之间，方便清理和回顾。
+   任务关键词还可以在具体的文件中用 =#+SEQ_TODO: TODO NEXT | DONE= 这样的方式单独设置。
+
+   此外要求子任务未完成时不能将父任务标记为完成
+   #+BEGIN_SRC emacs-lisp
+   (setq org-enforce-todo-dependencies t)
+   (setq org-enforce-todo-checkbox-dependencies t)
+   #+END_SRC
+
+   然后是 org-capture 的模板，我的模板暂时分为以下几个:
+   + Inbox: 用来收集基础的未归类的内容
+
+     #+BEGIN_SRC emacs-lisp
+     (setq org-capture-templates nil)
+     (add-to-list 'org-capture-templates
+                  '("i" "Inbox"
+                    entry (file "~/Dropbox/org/inbox.org")
+                    "* %U - %^{heading} %^g\n %i\n"
+                    ))
+     #+END_SRC
+
+   + Notes: 分类明确的笔记内容
+
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates
+                  '("n" "Notes"
+                    entry (file "~/Dropbox/org/notes/inbox.org")
+                    "* %^{heading} %^g\n %t\n %i\n"
+                    ))
+     #+END_SRC
+
+   + Journal: 日志
+
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates
+                  '("j" "Journal"
+                    entry (file+datetree "~/Dropbox/org/journal.org")
+                    "* %U - %^{heading} \n %i\n"
+                    ))
+     #+END_SRC
+
+   在上述模板中有时候需要填 tag，我把 tag 的举例设置得大一些，这样当标题比较长的时候不会影响阅读
+   #+BEGIN_SRC emacs-lisp
+   (setq org-tags-column -100)
+   #+END_SRC
+
+   然后是 agenda 相关的设置
+   #+BEGIN_SRC emacs-lisp
+   ;; (setq org-agenda-ndays 1)
+   ;; org-agenda-ndays 自 org 7.8 后就失效了
+   (setq org-agenda-span 'day)
+   (setq org-agenda-files (list "~/Dropbox/org/journal.org"))
+   #+END_SRC
+
+   clock 相关的设置
+   #+BEGIN_SRC emacs-lisp
+   (setq org-clock-into-drawer t)
+   #+END_SRC
+
+   2017/01/31 MobileOrg 有了更新，界面、操作都变得好多了，因此还是把 MobileOrg 用起来。
+
+   前面已经设置了 agenda-files，它们会被同步到手机上，不用再额外设置。除此以外设置一下用来接收手机上内容的文件，照例放到 inbox 里去。
+   #+BEGIN_SRC emacs-lisp
+   (require 'org-mobile)
+   (setq org-mobile-directory "~/Dropbox/应用/MobileOrg")
+   (setq org-mobile-inbox-for-pull "~/Dropbox/org/inbox.org")
+   #+END_SRC
+
+   从 Emacs China 得到的自动同步的配置，10 分钟和 MobileOrg 同步一次
+   #+BEGIN_SRC emacs-lisp
+   (defvar org-mobile-sync-timer nil)
+   (defvar org-mobile-sync-idle-secs (* 60 10))
+   (defun org-mobile-sync ()
+     (interactive)
+     (org-mobile-pull)
+     (org-mobile-push))
+   (defun org-mobile-sync-enable ()
+     "enable mobile org idle sync"
+     (interactive)
+     (setq org-mobile-sync-timer
+           (run-with-idle-timer org-mobile-sync-idle-secs t
+                                'org-mobile-sync)));
+   (defun org-mobile-sync-disable ()
+     "disable mobile org idle sync"
+     (interactive)
+     (cancel-timer org-mobile-sync-timer))
+   (org-mobile-sync-enable)
+   #+END_SRC
+
+   为方便清理和回顾，让各个任务能在各文件之间转接
+   #+BEGIN_SRC emacs-lisp
    (setq org-refile-use-outline-path 'file)
    (setq org-refile-targets
-         '((org-agenda-files :level . 1)
-           ("evernote.txt" :level . 1)
-           ("list.org" :level . 1)
-           ("notes.org" :level . 1)))
-   ;; Set to the name of the file where new notes will be stored
-   (setq org-mobile-inbox-for-pull "~/Dropbox/org/inbox.org")
+         '(("~/Dropbox/org/inbox.org" :level . 1)
+           ("~/Dropbox/org/journal.org" :level . 1)
+           ("~/Dropbox/org/memo.org" :level . 1)
+           ("~/Dropbox/org/notes/inbox.org" :level . 1)))
    #+END_SRC
 
 ** 写作设置
@@ -777,23 +823,39 @@
 
 * TODO 全局快捷键设置
 
+  首先设置 smex，有了 smex 后，可以减少快捷键的使用
   #+BEGIN_SRC emacs-lisp
-  (global-set-key [f2]  'hs-toggle-hiding)
-  (global-set-key [f3]  'bookmark-set)
-  (global-set-key [f4]  'bookmark-bmenu-list)
-  (global-set-key [f7]  'eval-buffer)
-  (global-set-key [f8]  'eval-last-sexp)
-  (global-set-key [f11] 'toggle-frame-fullscreen)
-  (global-set-key [f12] 'toggle-frame-maximized)
-
   (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
   (global-set-key (kbd "C-x k") 'kill-this-buffer)
+  #+END_SRC
 
-  ;; 用于编辑的一些快捷键
+  为了更好地使用 smex，为一些常用的命令设置别名。比如说下面这些命令，原先都设置为用 F2、F3 这样的键，在 HHKB 键盘上很不方便。
+  #+BEGIN_SRC emacs-lisp
+  (defalias 'hide 'hs-toggle-hidding)
+  (defalias 'bms 'bookmark-set)
+  (defalias 'bml 'bookmark-bmenu-list)
+  (defalias 'fs 'toggle-frame-fullscreen)
+  (defalias 'mw 'toggle-frame-maximized)
+  (defalias 'evalb 'eval-buffer)
+  (defalias 'evals 'eval-last-sexp)
+
+  ;; (global-set-key [f2]  'hs-toggle-hiding)
+  ;; (global-set-key [f3]  'bookmark-set)
+  ;; (global-set-key [f4]  'bookmark-bmenu-list)
+  ;; (global-set-key [f11] 'toggle-frame-fullscreen)
+  ;; (global-set-key [f12] 'toggle-frame-maximized)
+  ;; (global-set-key [f7]  'eval-buffer)
+  ;; (global-set-key [f8]  'eval-last-sexp)
+  #+END_SRC
+
+  用于编辑的一些快捷键
+  #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "M-p") 'move-line-region-up)
   (global-set-key (kbd "M-n") 'move-line-region-down)
   (global-set-key (kbd "C-z") 'delete-trailing-whitespace)
+  #+END_SRC
 
+  #+BEGIN_SRC emacs-lisp
   ;; 选择
   (global-set-key (kbd "C-M-SPC") 'set-mark-command)
   (global-set-key (kbd "C-=") 'er/expand-region)
@@ -810,12 +872,10 @@
   (global-set-key (kbd "C-c s") 'sr-speedbar-toggle)
 
   ;; org-mode
-  (global-set-key (kbd "C-c a") 'org-agenda-list)
   (global-set-key (kbd "C-c b") 'org-iswitchb)
   (global-set-key (kbd "C-c c") 'org-capture)
   (global-set-key (kbd "C-c l") 'org-store-link)
   (global-set-key (kbd "C-c m") 'org-tags-view)
   (global-set-key (kbd "C-c p") 'blog-post)
   (global-set-key (kbd "C-c q") 'publish-project)
-  (global-set-key (kbd "C-c t") 'org-todo-list)
   #+END_SRC
