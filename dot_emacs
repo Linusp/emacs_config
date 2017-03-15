@@ -21,7 +21,7 @@
     (package-refresh-contents)
     (package-install 'org-dotemacs)))
 
-(setq org-dotemacs-default-file "/home/emonster/Dropbox/conf/emacs_config/emacs_config.org")
+(setq org-dotemacs-default-file "/home/emonster/Projects/emacs_config/emacs_config.org")
 (org-dotemacs-load-default)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -33,7 +33,7 @@
     ("76935a29af65f8c915b1b3b4f6326e2e8d514ca098bd7db65b0caa533979fc01" default)))
  '(package-selected-packages
    (quote
-    (yaml-mode hydandata-light-theme color-theme-modern org-bullets highlight-leading-spaces highlight-leading-spaces-mode highlight-parentheses hlinum org-dotemacs))))
+    (helm-swoop org-download yaml-mode hydandata-light-theme color-theme-modern org-bullets highlight-leading-spaces highlight-leading-spaces-mode highlight-parentheses hlinum org-dotemacs))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
