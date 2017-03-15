@@ -107,6 +107,7 @@
   (add-to-list 'my-package-list '(helm helm-core) t)
   (add-to-list 'my-package-list '(helm-ag helm-ag) t)
   (add-to-list 'my-package-list '(helm-org-rifle helm-org-rifle) t)
+  (add-to-list 'my-package-list '(helm-swoop helm-swoop) t)
   (add-to-list 'my-package-list '(swiper ivy) t)
   (add-to-list 'my-package-list '(magit magit) t)
   #+END_SRC
