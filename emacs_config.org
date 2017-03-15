@@ -555,7 +555,7 @@
      (add-to-list 'org-capture-templates
                   '("i" "Inbox"
                     entry (file "~/Dropbox/org/inbox.org")
-                    "* %U - %^{heading} %^g\n %i\n"
+                    "* %U - %^{heading} %^g\n %?\n"
                     ))
      #+END_SRC
 
@@ -565,7 +565,7 @@
      (add-to-list 'org-capture-templates
                   '("n" "Notes"
                     entry (file "~/Dropbox/org/notes/inbox.org")
-                    "* %^{heading} %^g\n %t\n %i\n"
+                    "* %^{heading} %t %^g\n %?\n"
                     ))
      #+END_SRC
 
@@ -575,8 +575,40 @@
      (add-to-list 'org-capture-templates
                   '("j" "Journal"
                     entry (file+datetree "~/Dropbox/org/journal.org")
-                    "* %U - %^{heading} \n %i\n"
+                    "* %U - %^{heading} %^g\n %?\n"
                     ))
+     #+END_SRC
+
+   + Card
+
+     为所有卡片设置两个字母的 key，并共享相同的前缀
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates
+                  '("c" "Cards"))
+     #+END_SRC
+
+     术语卡
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates
+                  '("ct" "Term Card"
+                    entry (file+headline "~/Dropbox/org/cards.org" "术语")
+                    "** %^{term} %^g\n   :PROPERTIES:\n   :Created: %U\n   :END:\n\n   %?"))
+     #+END_SRC
+
+     词语卡
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates
+                  '("cv" "Vocabulary Card"
+                    entry (file+headline "~/Dropbox/org/cards.org" "词语")
+                    "** %^{vocabulary} %^g\n   :PROPERTIES:\n   :Created: %U\n   :END:\n\n   %?"))
+     #+END_SRC
+
+     人名卡
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates
+                  '("cp" "Person Card"
+                    entry (file+headline "~/Dropbox/org/cards.org" "人名")
+                    "** %^{person} %^g\n   :PROPERTIES:\n   :Created: %U\n   :END:\n\n   %?"))
      #+END_SRC
 
    在上述模板中有时候需要填 tag，我把 tag 的举例设置得大一些，这样当标题比较长的时候不会影响阅读
@@ -635,6 +667,12 @@
            ("~/Dropbox/org/journal.org" :level . 1)
            ("~/Dropbox/org/memo.org" :level . 1)
            ("~/Dropbox/org/notes/inbox.org" :level . 1)))
+   #+END_SRC
+
+   设置 helm-org-rifle
+   #+BEGIN_SRC emacs-lisp
+   ;; 在搜索结果中显示 heading 的全路径(包括文件名)
+   (setq helm-org-rifle-show-path t)
    #+END_SRC
 
 ** 写作设置
