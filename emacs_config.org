@@ -170,7 +170,7 @@
    (menu-bar-mode 0)                       ;关闭菜单栏
    (scroll-bar-mode 0)                     ;关闭滚动条
    (blink-cursor-mode 0)                   ;关闭光标闪烁
-   (global-nlinum-mode 1)                  ;显示行号
+   (global-nlinum-mode 0)                  ;显示行号
    (column-number-mode 1)                  ;显示列号
    (display-time)                          ;显示时间
    (hlinum-activate)                       ;高亮当前行号
