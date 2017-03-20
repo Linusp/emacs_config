@@ -533,7 +533,7 @@
     )
    #+end_src
 
-** GTD 相关
+** 个人管理
 
    设置基础的任务状态关键词，其中 "DONE" 和 "ABORT" 表示终结状态，并且用 "@" 设置为在进入终结状态时，要求输入笔记；用 "!" 设置从终结状态变化为其他状态时自动添加变更信息。
    #+BEGIN_SRC emacs-lisp
@@ -612,6 +612,14 @@
                   '("cp" "Person Card"
                     entry (file+headline "~/Dropbox/org/cards.org" "人名")
                     "** %^{person} %^g\n   :PROPERTIES:\n   :Created: %U\n   :END:\n\n   %?"))
+     #+END_SRC
+
+     金句卡
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates
+                  '("cs" "Sentence Card"
+                    entry (file+headline "~/Dropbox/org/cards.org" "金句")
+                    "** %^{sent} %^g\n   :PROPERTIES:\n   :Created: %U\n   :END:\n\n   %?"))
      #+END_SRC
 
    在上述模板中有时候需要填 tag，我把 tag 的举例设置得大一些，这样当标题比较长的时候不会影响阅读
