@@ -117,6 +117,17 @@
   (add-to-list 'my-package-list '(yasnippet yasnippet) t)
   #+END_SRC
 
+  检查插件，如果无法找到则进行安装
+  #+BEGIN_SRC emacs-lisp
+    (dolist (pkg-info my-package-list)
+      (when (not (require (nth 0 pkg-info) nil :noerror))
+        (progn
+        (message "install %s now..." (symbol-name (nth 1 pkg-info)))
+        (setq url-http-attempt-keepalives nil)
+        (package-refresh-contents)
+        (package-install (nth 1 pkg-info)))))
+  #+END_SRC
+
   载入一些内建的功能，以及系统外插件
   #+BEGIN_SRC emacs-lisp
   (require 'font-lock)
@@ -128,17 +139,9 @@
 
   (add-to-list 'load-path "/usr/share/emacs/site-lisp/global/")
   (require 'gtags)                        ;from `apt-get install global`
-  #+END_SRC
 
-  检查插件，如果无法找到则进行安装
-  #+BEGIN_SRC emacs-lisp
-    (dolist (pkg-info my-package-list)
-      (when (not (require (nth 0 pkg-info) nil :noerror))
-        (progn
-        (message "install %s now..." (symbol-name (nth 1 pkg-info)))
-        (setq url-http-attempt-keepalives nil)
-        (package-refresh-contents)
-        (package-install (nth 1 pkg-info)))))
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/org-brain/")
+  (require 'org-brain)
   #+END_SRC
 
 * 外观设置
