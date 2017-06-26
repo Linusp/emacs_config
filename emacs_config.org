@@ -445,6 +445,7 @@
            org-hide-emphasis-markers t
            org-image-actual-width nil
            org-completion-use-ido t
+           org-html-checkbox-type 'html
            )
      (org-bullets-mode 1)
      )
@@ -586,7 +587,7 @@
      (add-to-list 'org-capture-templates
                   '("n" "Notes"
                     entry (file "~/Dropbox/org/notes/inbox.org")
-                    "* %^{heading} %t %^g\n %?\n"
+                    "* %^{heading} %t %^g\n  %?\n"
                     ))
      #+END_SRC
 
@@ -637,12 +638,17 @@
      (add-to-list 'org-capture-templates
                   '("cs" "Sentence Card"
                     entry (file+headline "~/Dropbox/org/cards.org" "金句")
-                    "** %^{sent} %^g\n   :PROPERTIES:\n   :Created: %U\n   :END:\n\n   %?"))
+                    "** %^{source} %^g\n   :PROPERTIES:\n   :Created: %U\n   :END:\n\n   %?"))
      #+END_SRC
 
    在上述模板中有时候需要填 tag，我把 tag 的举例设置得大一些，这样当标题比较长的时候不会影响阅读
    #+BEGIN_SRC emacs-lisp
    (setq org-tags-column -100)
+   #+END_SRC
+
+   Org Brain 设置
+   #+BEGIN_SRC emacs-lisp
+   (setq org-brain-path "~/Dropbox/org/brain")
    #+END_SRC
 
    然后是 agenda 相关的设置
