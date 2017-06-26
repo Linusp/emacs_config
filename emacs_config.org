@@ -111,6 +111,7 @@
   (add-to-list 'my-package-list '(swiper ivy) t)
   (add-to-list 'my-package-list '(magit magit) t)
   (add-to-list 'my-package-list '(symbol-overlay symbol-overlay) t)
+  (add-to-list 'my-package-list '(py-autopep8 py-autopep8) t)
   #+END_SRC
 
   自动补全
@@ -370,6 +371,12 @@
          python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
    (add-hook 'python-mode-hook 'my-python-mode-config)
    ;; (add-hook 'python-mode-hook 'jedi:setup)
+   #+END_SRC
+
+   设置 pep8
+   #+BEGIN_SRC emacs-lisp
+   (add-hook 'python-mode-hook 'py-autopep8-enable-on-save)
+   (setq py-autopep8-options '("--max-line-length=100"))
    #+END_SRC
 
 ** Lisp
