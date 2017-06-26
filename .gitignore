@@ -11,3 +11,10 @@ emacs.d/elpa/gnupg/
 smex-items
 ido.last
 emacs.d/elpa/*-readme.txt
+emacs.d/games/
+emacs.d/history
+emacs.d/bookmarks
+emacs.d/recentf
+emacs.d/tramp
+emacs.d/request/
+emacs.d/session.*
