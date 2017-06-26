@@ -110,6 +110,7 @@
   (add-to-list 'my-package-list '(helm-swoop helm-swoop) t)
   (add-to-list 'my-package-list '(swiper ivy) t)
   (add-to-list 'my-package-list '(magit magit) t)
+  (add-to-list 'my-package-list '(symbol-overlay symbol-overlay) t)
   #+END_SRC
 
   自动补全
@@ -921,6 +922,10 @@
   (global-set-key (kbd "C-c h s") 'helm-do-grep-ag) ;使用 ag 搜索目录
   (global-set-key (kbd "C-s") 'swiper)              ;不使用内置的 search 而是使用 swiper
   (setq ivy-display-style 'fancy)
+
+  ;; (global-set-key (kbd "M-i") 'symbol-overlay-put)
+  ;; (global-set-key (kbd "M-u") 'symbol-overlay-switch-backward)
+  ;; (global-set-key (kbd "M-o") 'symbol-overlay-switch-forward)
 
   ;; coding
   (global-set-key (kbd "M-;") 'comment-dwim-line)
