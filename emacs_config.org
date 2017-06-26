@@ -415,7 +415,19 @@
    (add-hook 'go-mode-hook 'my-go-mode-hook)
    #+END_SRC
 
-* TODO Org-mode 设置
+** Octave
+
+   #+BEGIN_SRC emacs-lisp
+   (defun my-octave-mode-config ()
+     (setq indent-tabs-mode nil
+           octave-auto-indent t
+           octave-block-offset 4))
+   (add-hook 'octave-mode-hook 'my-octave-mode-config)
+   (add-to-list 'auto-mode-alist '("\\.m\\'" . octave-mode))
+   #+END_SRC
+
+
+* Org-mode 设置
 
 ** 基础设置
 
