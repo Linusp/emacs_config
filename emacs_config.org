@@ -117,6 +117,11 @@
   (add-to-list 'my-package-list '(yasnippet yasnippet) t)
   #+END_SRC
 
+  edit-server
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(edit-server edit-server) t)
+  #+END_SRC
+
   检查插件，如果无法找到则进行安装
   #+BEGIN_SRC emacs-lisp
     (dolist (pkg-info my-package-list)
