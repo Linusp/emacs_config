@@ -112,6 +112,7 @@
   (add-to-list 'my-package-list '(magit magit) t)
   (add-to-list 'my-package-list '(symbol-overlay symbol-overlay) t)
   (add-to-list 'my-package-list '(py-autopep8 py-autopep8) t)
+  (add-to-list 'my-package-list '(yafolding yafolding) t)
   #+END_SRC
 
   自动补全
