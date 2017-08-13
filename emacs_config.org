@@ -913,21 +913,18 @@
 
   为了更好地使用 smex，为一些常用的命令设置别名。比如说下面这些命令，原先都设置为用 F2、F3 这样的键，在 HHKB 键盘上很不方便。
   #+BEGIN_SRC emacs-lisp
-  (defalias 'hide 'hs-toggle-hidding)
-  (defalias 'bms 'bookmark-set)
-  (defalias 'bml 'bookmark-bmenu-list)
-  (defalias 'fs 'toggle-frame-fullscreen)
-  (defalias 'mw 'toggle-frame-maximized)
-  (defalias 'evalb 'eval-buffer)
-  (defalias 'evals 'eval-last-sexp)
-
-  ;; (global-set-key [f2]  'hs-toggle-hiding)
-  ;; (global-set-key [f3]  'bookmark-set)
-  ;; (global-set-key [f4]  'bookmark-bmenu-list)
-  ;; (global-set-key [f11] 'toggle-frame-fullscreen)
-  ;; (global-set-key [f12] 'toggle-frame-maximized)
-  ;; (global-set-key [f7]  'eval-buffer)
-  ;; (global-set-key [f8]  'eval-last-sexp)
+  (defalias 'z/hs 'hs-toggle-hiding)
+  (defalias 'z/bms 'bookmark-set)
+  (defalias 'z/bml 'bookmark-bmenu-list)
+  (defalias 'z/fs 'toggle-frame-fullscreen)
+  (defalias 'z/mw 'toggle-frame-maximized)
+  (defalias 'z/evalb 'eval-buffer)
+  (defalias 'z/evals 'eval-last-sexp)
+  (defalias 'z/latex 'org-preview-latex-fragment)
+  (defalias 'z/image 'org-toggle-inline-images)
+  (defalias 'z/gs 'magit-status)
+  (defalias 'z/cm 'magit-commit)
+  (defalias 'z/rebase 'magit-rebase-interactive)
   #+END_SRC
 
   用于编辑的一些快捷键
