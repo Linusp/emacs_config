@@ -84,6 +84,7 @@
   (add-to-list 'my-package-list '(skewer-mode skewer-mode) t)
   (add-to-list 'my-package-list '(markdown-mode markdown-mode) t)
   (add-to-list 'my-package-list '(slime slime) t)
+  (add-to-list 'my-package-list '(flycheck flycheck) t)
   #+END_SRC
 
   org-mode 相关
@@ -358,12 +359,13 @@
      (whitespace-mode t)
      (hl-line-mode t)
      (pretty-symbols-mode t)
+     (flycheck-mode t)
      ;; (local-set-key (kbd "C-;") 'jedi:complete)
      ;; (hidden-minor-mode)
      (set (make-local-variable 'electric-indent-mode) nil))
    (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
    (add-to-list 'auto-mode-alist '("SConstruct" . python-mode))
-   (setq python-shell-interpreter "python"
+   (setq python-shell-interpreter "python3"
          python-shell-interpreter-args ""
          python-shell-prompt-regexp "In \\[[0-9]+\\]: "
          python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
