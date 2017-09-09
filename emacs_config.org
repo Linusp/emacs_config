@@ -72,8 +72,11 @@
   (add-to-list 'my-package-list
              '(smart-mode-line-powerline-theme smart-mode-line-powerline-theme)
              t)
-  (add-to-list 'my-package-list '(sr-speedbar sr-speedbar) t)
+  (add-to-list 'my-package-list '(all-the-icons all-the-icons) t)
+  (add-to-list 'my-package-list '(neotree neotree) t)
   (add-to-list 'my-package-list '(color-theme-modern color-theme-morden) t)
+  (add-to-list 'my-package-list '(hydandata-light-theme hydandata-light-theme) t)
+  (add-to-list 'my-package-list '(color-theme-sanityinc-tomorrow color-theme-sanityinc-tomorrow) t)
   #+END_SRC
 
   各种 major-mode，包含一些编程语言的支持
@@ -160,8 +163,11 @@
    #+BEGIN_SRC emacs-lisp
    (set-language-environment 'UTF-8)
    (set-locale-environment "UTF-8")
-   (set-default-font "Dejavu Sans Mono 10")
-   (set-fontset-font "fontset-default" 'unicode "WenQuanYi Micro Hei Mono 12");
+   (set-default-font "Dejavu Sans Mono 12")
+   (set-fontset-font "fontset-default" 'unicode "WenQuanYi Micro Hei Mono 15");
+   (setq face-font-rescale-alist '(
+                                   ("WenQuanYi Micro Hei Mono" . 1.3)
+                                   ))
    #+END_SRC
 
 ** 界面
@@ -173,8 +179,8 @@
    (setq frame-title-format "[%b]")                ;显示buffer的名字
    (setq user-full-name "Linusp")                  ;用户名
    (setq user-mail-address "linusp1024@gmail.com") ;用户邮箱
-   (setq display-time-24hr-format  t)              ;设置为24小时制
-   (setq display-time-day-and-date t)              ;显示日期
+   (setq display-time-format "%Y/%m/%d 周%a %H:%M:%S")
+   (setq display-time-default-load-average nil)
    (setq display-time-interval 1)
 
    (column-number-mode 0)                  ;显示列号
@@ -188,6 +194,8 @@
    (hlinum-activate)                       ;高亮当前行号
    (modify-all-frames-parameters           ;使用更好看的光标
     (list (cons 'cursor-type 'bar)))
+   (set-face-attribute 'hl-line nil :background "gray5")
+   (global-hl-line-mode 1)                 ;开启当前行高亮
    #+END_SRC
 
    空白符显示设置，主要是把制表符啊、多余的空格啊这种高亮一下
@@ -215,14 +223,9 @@
    (require 'color-theme-mossysparks)
    #+END_SRC
 
-   安装额外的 color-theme
-   #+BEGIN_SRC emacs-lisp
-   (package-install 'hydandata-light-theme)
-   #+END_SRC
-
    主题设置，包含 color-theme 和 mode-line 的美化
    #+BEGIN_SRC emacs-lisp
-   (load-theme 'hydandata-light t)
+   (load-theme 'sanityinc-tomorrow-eighties t)
    (setq sml/name-width 20)         ;mode-line 文件名最大长度
    (setq sml/mode-width 'nil)       ;mode-line 中不显示 minor-mode
    (setq sml/shorten-directory t)   ;mode-line 中文件名超出长度时折叠
@@ -231,17 +234,15 @@
    (sml/setup)
    (setq powerline-arrow-shape 'curve)
    (setq powerline-default-separator-dir '(right . left))
-   (sml/apply-theme 'light-powerline)
+   (sml/apply-theme 'powerline)
    (add-to-list 'sml/replacer-regexp-list '("^~/Projects/" ":P:"))
    (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/" ":DB:"))
    (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/org" ":ORG:"))
    #+END_SRC
 
-   speedbar 的设置，嗯，其实我都不怎么用 speedbar 来着。
+   neotree 的设置
    #+BEGIN_SRC emacs-lisp
-   (setq speedbar-show-unknown-files t)
-   (setq speedbar-use-images nil)
-   (setq sr-speedbar-right-side nil)
+   (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
    #+END_SRC
 
    然后默认将 Emacs 最大化
