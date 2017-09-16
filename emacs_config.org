@@ -119,9 +119,12 @@
   (add-to-list 'my-package-list '(yafolding yafolding) t)
   #+END_SRC
 
-  自动补全
+  自动补全，使用 yasnippet 和 company，因为不用 auto-complete 这个包，就不用安装 jedi 了，company-jedi 会附带安装上 jedi-core，这就够了，jedi 这个包是使用 auto-complete 的。
   #+BEGIN_SRC emacs-lisp
   (add-to-list 'my-package-list '(yasnippet yasnippet) t)
+  (add-to-list 'my-package-list '(company company) t)
+  (add-to-list 'my-package-list '(jedi-core jedi-core) t)
+  (add-to-list 'my-package-list '(company-jedi company-jedi) t)
   #+END_SRC
 
   edit-server
@@ -290,6 +293,8 @@
                      transient-mark-mode))
         (indent-region (region-beginning)
                                (region-end) nil))))))
+   (add-hook 'after-init-hook 'global-company-mode) ;使用 company-mode 来进行补全
+   (add-to-list 'company-backends 'company-yasnippet)
    #+END_SRC
 
 ** 模板和自动补全
@@ -349,6 +354,25 @@
 
 ** Python
 
+   jedi 的安装，首先参照 [[https://archive.zhimingwang.org/blog/2015-04-26-using-python-3-with-emacs-jedi.html][这篇文章]] 设置 python3 的 jedi
+   #+BEGIN_SRC shell
+   mkdir -p ~/.emacs.d/.python-environments
+   virtualenv -p /usr/bin/python3  --prompt="<venv:jedi>" jedi
+   pip install --upgrade ~/.emacs.d/elpa/jedi-core-20170319.2107/
+   #+END_SRC
+
+   然后设置 jedi，需要注意的是，这里的 "jedi:server-command" 需要设置一下
+   #+BEGIN_SRC emacs-lisp
+   (add-hook 'python-mode-hook 'jedi:setup)
+   (setq jedi:complete-on-dot t)
+   (setq jedi:environment-root "jedi")
+   (setq jedi:server-command (jedi:-env-server-command))
+   (setq jedi:use-shortcuts t)             ;能使用 import tensorflow as tf 后的 tf 来补全
+   (message "jedi:server-command is %S" jedi:server-command)
+   #+END_SRC
+
+   另外，遵照 [[https://github.com/tkf/emacs-jedi][emacs-jedi]] 项目里的说明，因为我使用 company-mode，就不需要安装 jedi，只需要安装 company-jedi 就好了， company-jedi 里会安装 jedi-core，这就够了。
+
    #+BEGIN_SRC emacs-lisp
    (defun my-python-mode-config ()
      (setq python-indent-offset 4
@@ -361,8 +385,7 @@
      (hl-line-mode t)
      (pretty-symbols-mode t)
      (flycheck-mode t)
-     ;; (local-set-key (kbd "C-;") 'jedi:complete)
-     ;; (hidden-minor-mode)
+     (add-to-list 'company-backends 'company-jedi)
      (set (make-local-variable 'electric-indent-mode) nil))
    (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
    (add-to-list 'auto-mode-alist '("SConstruct" . python-mode))
@@ -374,7 +397,6 @@
          python-shell-completion-module-string-code "';'.join(module_completion('''%s'''))\n"
          python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
    (add-hook 'python-mode-hook 'my-python-mode-config)
-   ;; (add-hook 'python-mode-hook 'jedi:setup)
    #+END_SRC
 
    设置 pep8
