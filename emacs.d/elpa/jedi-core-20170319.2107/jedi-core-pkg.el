@@ -1,0 +1,1 @@
+(define-package "jedi-core" "20170319.2107" "Common code of jedi and companyjedi"  '((emacs "24") (epc "0.1.0") (python-environment "0.0.2") (cl-lib "0.5") ) :url "https://github.com/tkf/emacs-jedi" )
