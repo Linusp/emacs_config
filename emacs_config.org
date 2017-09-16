@@ -127,6 +127,22 @@
   (add-to-list 'my-package-list '(company-jedi company-jedi) t)
   #+END_SRC
 
+  auto-virtualenvwrapper，可以根据打开的 python 文件，找到对应的 venv，然后激活这个 venv，用的是 virtualenvwrapper 这个包，所以把这个也加上
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(virtualenvwrapper virtualenvwrapper) t)
+  (add-to-list 'my-package-list '(auto-virtualenvwrapper auto-virtualenvwrapper) t)
+  #+END_SRC
+
+  不过要注意的是，这个 auto-virtualenvwrapper 里的 auto-virtualenvwrapper--project-root-vc 方法有 bug，修复如下
+  #+BEGIN_SRC emacs-lisp
+  (defun auto-virtualenvwrapper--project-root-vc ()
+    "Return vc root if file is in version control."
+    (message "find git root: %s" (vc-find-root (or (buffer-file-name) "") ".git"))
+    (or
+     (vc-find-root (or (buffer-file-name) "") ".git")
+     (vc-find-root (or (buffer-file-name) "") ".hg")))
+  #+END_SRC
+
   edit-server
   #+BEGIN_SRC emacs-lisp
   (add-to-list 'my-package-list '(edit-server edit-server) t)
@@ -372,6 +388,28 @@
    #+END_SRC
 
    另外，遵照 [[https://github.com/tkf/emacs-jedi][emacs-jedi]] 项目里的说明，因为我使用 company-mode，就不需要安装 jedi，只需要安装 company-jedi 就好了， company-jedi 里会安装 jedi-core，这就够了。
+
+   flycheck 的相关设置
+   #+BEGIN_SRC emacs-lisp
+   (require 'auto-virtualenvwrapper)
+   (add-hook 'python-mode-hook #'auto-virtualenvwrapper-activate)
+   (add-hook 'window-configuration-change-hook #'auto-virtualenvwrapper-activate)
+   (add-hook 'focus-in-hook #'auto-virtualenvwrapper-activate)
+
+   ;; 设置让 flycheck 使用 virtualenv 中的 pylint
+   (declare-function python-shell-calculate-exec-path "python")
+
+   (defun flycheck-virtualenv-executable-find (executable)
+     "Find an EXECUTABLE in the current virtualenv if any."
+     (if (bound-and-true-p python-shell-virtualenv-root)
+         (let ((exec-path (python-shell-calculate-exec-path)))
+           (executable-find executable))
+       (executable-find executable)))
+
+   (defun flycheck-virtualenv-setup ()
+     "Setup Flycheck for the current virtualenv."
+     (setq-local flycheck-executable-find #'flycheck-virtualenv-executable-find))
+   #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
    (defun my-python-mode-config ()
