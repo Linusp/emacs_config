@@ -18,3 +18,8 @@ emacs.d/recentf
 emacs.d/tramp
 emacs.d/request/
 emacs.d/session.*
+emacs.d/url/
+
+.org-id-locations
+.python-environments
+ac-comphist.dat
