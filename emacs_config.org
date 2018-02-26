@@ -116,6 +116,7 @@
   (add-to-list 'my-package-list '(symbol-overlay symbol-overlay) t)
   (add-to-list 'my-package-list '(py-autopep8 py-autopep8) t)
   (add-to-list 'my-package-list '(yafolding yafolding) t)
+  (add-to-list 'my-package-list '(git-gutter git-gutter) t)
   #+END_SRC
 
   自动补全，使用 yasnippet 和 company，因为不用 auto-complete 这个包，就不用安装 jedi 了，company-jedi 会附带安装上 jedi-core，这就够了，jedi 这个包是使用 auto-complete 的。
@@ -214,6 +215,7 @@
     (list (cons 'cursor-type 'bar)))
    (set-face-attribute 'hl-line nil :background "gray5")
    (global-hl-line-mode 1)                 ;开启当前行高亮
+   (global-git-gutter-mode 1)              ;开启 git-gutter
    #+END_SRC
 
    空白符显示设置，主要是把制表符啊、多余的空格啊这种高亮一下
