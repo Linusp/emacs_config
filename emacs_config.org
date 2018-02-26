@@ -73,7 +73,6 @@
              '(smart-mode-line-powerline-theme smart-mode-line-powerline-theme)
              t)
   (add-to-list 'my-package-list '(all-the-icons all-the-icons) t)
-  (add-to-list 'my-package-list '(neotree neotree) t)
   (add-to-list 'my-package-list '(color-theme-modern color-theme-morden) t)
   (add-to-list 'my-package-list '(hydandata-light-theme hydandata-light-theme) t)
   (add-to-list 'my-package-list '(color-theme-sanityinc-tomorrow color-theme-sanityinc-tomorrow) t)
@@ -257,11 +256,6 @@
    (add-to-list 'sml/replacer-regexp-list '("^~/Projects/" ":P:"))
    (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/" ":DB:"))
    (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/org" ":ORG:"))
-   #+END_SRC
-
-   neotree 的设置
-   #+BEGIN_SRC emacs-lisp
-   (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
    #+END_SRC
 
    然后默认将 Emacs 最大化

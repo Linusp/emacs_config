@@ -1,1 +1,0 @@
-(define-package "neotree" "20170522.2258" "A tree plugin like NerdTree for Vim"  '((cl-lib "0.5") ) :url "https://github.com/jaypei/emacs-neotree" )
