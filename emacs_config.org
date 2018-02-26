@@ -634,6 +634,9 @@
                                 (java . t)
                                 (latex . t)
                                 (clojure . t)
+                                (ruby . t)
+                                (plantuml . t)
+                                (cypher . t)
                                 (emacs-lisp . t))
     )
    #+end_src
