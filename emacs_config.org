@@ -740,27 +740,6 @@
    (setq org-mobile-inbox-for-pull "~/Dropbox/org/inbox.org")
    #+END_SRC
 
-   从 Emacs China 得到的自动同步的配置，10 分钟和 MobileOrg 同步一次
-   #+BEGIN_SRC emacs-lisp
-   (defvar org-mobile-sync-timer nil)
-   (defvar org-mobile-sync-idle-secs (* 60 10))
-   (defun org-mobile-sync ()
-     (interactive)
-     (org-mobile-pull)
-     (org-mobile-push))
-   (defun org-mobile-sync-enable ()
-     "enable mobile org idle sync"
-     (interactive)
-     (setq org-mobile-sync-timer
-           (run-with-idle-timer org-mobile-sync-idle-secs t
-                                'org-mobile-sync)));
-   (defun org-mobile-sync-disable ()
-     "disable mobile org idle sync"
-     (interactive)
-     (cancel-timer org-mobile-sync-timer))
-   (org-mobile-sync-enable)
-   #+END_SRC
-
    为方便清理和回顾，让各个任务能在各文件之间转接
    #+BEGIN_SRC emacs-lisp
    (setq org-refile-use-outline-path 'file)
