@@ -1001,6 +1001,9 @@
   (defalias 'z/cm 'magit-commit)
   (defalias 'z/rebase 'magit-rebase-interactive)
   (defalias 'z/app 'counsel-linux-app)
+  (defalias 'z/repl 'replace-string)
+  (defalias 'z/repr 'replace-regexp)
+  (defalias 'z/install 'package-install)
   #+END_SRC
 
   用于编辑的一些快捷键
