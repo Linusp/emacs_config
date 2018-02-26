@@ -747,7 +747,7 @@
 
    在上述模板中有时候需要填 tag，我把 tag 的举例设置得大一些，这样当标题比较长的时候不会影响阅读
    #+BEGIN_SRC emacs-lisp
-   (setq org-tags-column -100)
+   (setq org-tags-column -50)
    #+END_SRC
 
    Org Brain 设置
