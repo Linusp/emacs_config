@@ -408,6 +408,7 @@
    (add-hook 'python-mode-hook #'auto-virtualenvwrapper-activate)
    (add-hook 'window-configuration-change-hook #'auto-virtualenvwrapper-activate)
    (add-hook 'focus-in-hook #'auto-virtualenvwrapper-activate)
+   (setq auto-virtualenvwrapper-verbose nil)
 
    ;; 设置让 flycheck 使用 virtualenv 中的 pylint
    (declare-function python-shell-calculate-exec-path "python")
@@ -430,6 +431,7 @@
            python-indent 4
            indent-tabs-mode nil
            default-tab-width 4)
+     (setenv "IPY_TEST_SIMPLE_PROMPT" "1") ;fixed emacs 25.1 bug
      (hs-minor-mode t)
      (auto-fill-mode 0)
      (whitespace-mode t)
@@ -440,7 +442,7 @@
      (set (make-local-variable 'electric-indent-mode) nil))
    (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
    (add-to-list 'auto-mode-alist '("SConstruct" . python-mode))
-   (setq python-shell-interpreter "python3"
+   (setq python-shell-interpreter "ipython"
          python-shell-interpreter-args ""
          python-shell-prompt-regexp "In \\[[0-9]+\\]: "
          python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
