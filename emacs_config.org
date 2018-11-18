@@ -667,8 +667,65 @@
                   '("i" "Inbox"
                     entry (file "~/Dropbox/org/inbox.org")
                     "* %U - %^{heading} %^g\n %?\n"
+                    :empty-lines 1
                     ))
      #+END_SRC
+
+   + Web: 用来收集 web 内容
+
+     用的是 org-protocol
+     #+BEGIN_SRC emacs-lisp
+     (require 'org-protocol)
+     #+END_SRC
+
+     添加一个组模板吧
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates '("w" "Web"))
+     #+END_SRC
+
+     定义一个函数，用来将选中内容插入到同一个 headline 中
+     #+BEGIN_SRC emacs-lisp
+     (defun org-capture-template-goto-link ()
+       (org-capture-put :target (list 'file+headline
+                                      (nth 1 (org-capture-get :target))
+                                      (org-capture-get :annotation)))
+       (org-capture-put-target-region-and-position)
+       (widen)
+       (let ((heading (nth 2 (org-capture-get :target))))
+         (goto-char (point-min))
+         (if (re-search-forward
+              (format org-complex-heading-regexp-format (regexp-quote heading)) nil t)
+             (org-end-of-subtree)
+           (goto-char (point-max))
+           (or (bolp) (insert "\n"))
+           (insert "* " heading "\n"))))
+     #+END_SRC
+
+     和 org-protocol 结合来做收集
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates
+                  '("wa" "Web Annotation" plain
+                    (file+function "~/Dropbox/org/inbox.org" org-capture-template-goto-link)
+                    "  %U\n  #+BEGIN_EXAMPLE\n  %:initial\n  #+END_EXAMPLE" :empty-lines 1 :immediate-finish t))
+     #+END_SRC
+
+     利用 [[https://github.com/alphapapa/org-protocol-capture-html][org-protocol-capture-html]] 来做稍后阅读
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'load-path "~/.emacs.d/site-lisp/org-protocol-capture-html")
+     (require 'org-protocol-capture-html)
+     #+END_SRC
+
+     #+BEGIN_SRC emacs-lisp
+     (defun web-file-to-save ()
+       (concat "~/Dropbox/org/web" (org-capture-get :description) ".org"))
+
+     (add-to-list 'org-capture-templates
+                  '("wr" "Web Reading" plain
+                    (function web-file-to-save)
+                    "LINK: %:link\n\n%:initial" :immediate-finish t))
+     #+END_SRC
+
+     <2018-04-02 一 07:46> 嗯，似乎还没有完成，会让我选文件来着……
 
    + Notes: 分类明确的笔记内容
 
@@ -677,6 +734,18 @@
                   '("n" "Notes"
                     entry (file "~/Dropbox/org/notes/inbox.org")
                     "* %^{heading} %t %^g\n  %?\n"
+                    :empty-lines 1
+                    ))
+     #+END_SRC
+
+   + Novels: 小说阅读记录
+
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates
+                  '("r" "Reading"
+                    entry (file "~/Dropbox/org/read/inbox.org")
+                    "* %^{heading} %t %^g\n  %?\n"
+                    :empty-lines 1
                     ))
      #+END_SRC
 
@@ -687,6 +756,7 @@
                   '("j" "Journal"
                     entry (file+datetree "~/Dropbox/org/journal.org")
                     "* %U - %^{heading} %^g\n %?\n"
+                    :empty-lines 1
                     ))
      #+END_SRC
 
@@ -713,41 +783,52 @@
                   '("c" "Cards"))
      #+END_SRC
 
-     术语卡
+     借用 anki-editor 里的代码，实现了一个函数用来生成符合 anki-editor 格式要求的 card 内容
      #+BEGIN_SRC emacs-lisp
-     (add-to-list 'org-capture-templates
-                  '("ct" "Term Card"
-                    entry (file+headline "~/Dropbox/org/cards.org" "术语")
-                    "** %^{term} %^g\n   :PROPERTIES:\n   :Created: %U\n   :END:\n\n   %?"))
+     (defun generate-anki-note-body ()
+       (interactive)
+       (message "Fetching note types...")
+       (let ((note-types (sort (anki-editor-note-types) #'string-lessp))
+             (decks (sort (anki-editor-deck-names) #'string-lessp))
+             deck note-type fields)
+         (setq deck (completing-read "Choose a deck: " decks))
+         (setq note-type (completing-read "Choose a note type: " note-types))
+         (message "Fetching note fields...")
+         (setq fields (anki-editor--anki-connect-invoke-result "modelFieldNames" `((modelName . ,note-type))))
+         (concat "  :PROPERTIES:\n"
+                 "  :ANKI_DECK: " deck "\n"
+                 "  :ANKI_NOTE_TYPE: " note-type "\n"
+                 "  :END:\n\n"
+                 (mapconcat (lambda (str) (concat "** " str))
+                            fields
+                            "\n\n"))))
      #+END_SRC
 
-     词语卡
+     词汇卡，需要在 anki 中建好 Vocabulary 这个记忆库，使用 words 这个笔记类型。
      #+BEGIN_SRC emacs-lisp
      (add-to-list 'org-capture-templates
-                  '("cv" "Vocabulary Card"
-                    entry (file+headline "~/Dropbox/org/cards.org" "词语")
-                    "** %^{vocabulary} %^g\n   :PROPERTIES:\n   :Created: %U\n   :END:\n\n   %?"))
+                  `("cv" "Vocabulary"
+                    entry (file+headline "~/Dropbox/org/cards.org" "Vocabulary")
+                    ,(concat "* %^{heading|Item} :note:\n"
+                             "%(generate-anki-note-body)\n"
+                    )))
      #+END_SRC
 
-     人名卡
+
+     人名卡，需要在 anki 中建好 Person 这个记忆库，使用 person 这个笔记类型。
      #+BEGIN_SRC emacs-lisp
      (add-to-list 'org-capture-templates
-                  '("cp" "Person Card"
-                    entry (file+headline "~/Dropbox/org/cards.org" "人名")
-                    "** %^{person} %^g\n   :PROPERTIES:\n   :Created: %U\n   :END:\n\n   %?"))
+                  `("cv" "Vocabulary"
+                    entry (file+headline "~/Dropbox/org/cards.org" "Person")
+                    ,(concat "* %^{heading|Item} :note:\n"
+                             "%(generate-anki-note-body)\n"
+                    )))
      #+END_SRC
 
-     金句卡
-     #+BEGIN_SRC emacs-lisp
-     (add-to-list 'org-capture-templates
-                  '("cs" "Sentence Card"
-                    entry (file+headline "~/Dropbox/org/cards.org" "金句")
-                    "** %^{source} %^g\n   :PROPERTIES:\n   :Created: %U\n   :END:\n\n   %?"))
-     #+END_SRC
 
    在上述模板中有时候需要填 tag，我把 tag 的举例设置得大一些，这样当标题比较长的时候不会影响阅读
    #+BEGIN_SRC emacs-lisp
-   (setq org-tags-column -50)
+   (setq org-tags-column -100)
    #+END_SRC
 
    Org Brain 设置
@@ -784,7 +865,17 @@
          '(("~/Dropbox/org/inbox.org" :level . 1)
            ("~/Dropbox/org/journal.org" :level . 1)
            ("~/Dropbox/org/memo.org" :level . 1)
-           ("~/Dropbox/org/notes/inbox.org" :level . 1)))
+           ("~/Dropbox/org/notes/inbox.org" :level . 1)
+           ("~/Dropbox/org/notes/nlp.org" :level . 1)
+           ("~/Dropbox/org/notes/linux.org" :level . 1)
+           ("~/Dropbox/org/notes/emacs.org" :level . 1)
+           ("~/Dropbox/org/notes/math.org" :level . 1)
+           ("~/Dropbox/org/notes/work.org" :level . 1)
+           ("~/Dropbox/org/notes/latex.org" :level . 1)
+           ("~/Dropbox/org/notes/rss.org" :level . 1)
+           ("~/Dropbox/org/notes/economics.org" :level . 1)
+           ("~/Dropbox/org/notes/machine-learning.org" :level . 1)
+           ("~/Dropbox/org/notes/python.org" :level . 1)))
    #+END_SRC
 
    设置 helm-org-rifle
