@@ -30,7 +30,7 @@
 
   设置打开网页链接时使用的默认浏览器为 Chrome
   #+BEGIN_SRC emacs-lisp
-  (setq browse-url-generic-program (executable-find "google-chrome"))
+  (setq browse-url-generic-program (executable-find "google-chrome-beta"))
   (setq browse-url-browser-function 'browse-url-generic)
   #+END_SRC
 
