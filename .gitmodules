@@ -1,3 +1,0 @@
-[submodule "emacs.d/site-lisp/org-brain"]
-	path = emacs.d/site-lisp/org-brain
-	url = git@github.com:Linusp/org-brain
