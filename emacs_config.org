@@ -274,6 +274,15 @@
    (toggle-frame-maximized)
    #+END_SRC
 
+   启用 moody modeline 和 minions
+   #+BEGIN_SRC emacs-lisp
+   (minions-mode 1)
+   (setq x-underline-at-descent-line t)
+   (setq moody-mode-line-height 24)
+   (moody-replace-mode-line-buffer-identification)
+   (moody-replace-vc-mode)
+   #+END_SRC
+
 * 功能增强
 
   #+BEGIN_SRC emacs-lisp
