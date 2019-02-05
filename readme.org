@@ -1,5 +1,7 @@
 * 个人 Emacs 配置
 
+[[file:images/emacs.png]]
+
 ** 版本
 
    - Emacs: 25.1
