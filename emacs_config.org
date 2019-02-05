@@ -220,9 +220,6 @@
    (setq frame-title-format "[%b]")                ;显示buffer的名字
    (setq user-full-name "Linusp")                  ;用户名
    (setq user-mail-address "linusp1024@gmail.com") ;用户邮箱
-   (setq display-time-format "%Y/%m/%d 周%a %H:%M:%S")
-   (setq display-time-default-load-average nil)
-   (setq display-time-interval 1)
 
    (column-number-mode 0)                  ;显示列号
    (tool-bar-mode 0)                       ;关闭工具栏
@@ -231,7 +228,6 @@
    (blink-cursor-mode 0)                   ;关闭光标闪烁
    (global-nlinum-mode 0)                  ;显示行号
    (column-number-mode 1)                  ;显示列号
-   (display-time)                          ;显示时间
    (modify-all-frames-parameters           ;使用更好看的光标
     (list (cons 'cursor-type 'bar)))
    (global-hl-line-mode 1)                 ;开启当前行高亮
