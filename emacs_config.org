@@ -69,7 +69,7 @@
   #+BEGIN_SRC emacs-lisp
   (add-to-list 'my-package-list '(nlinum nlinum) t)
   (add-to-list 'my-package-list '(color-theme color-theme) t)
-  (add-to-list 'my-package-list '(color-theme-modern color-theme-morden) t)
+  (add-to-list 'my-package-list '(color-theme-modern color-theme-modern) t)
   (add-to-list 'my-package-list '(hydandata-light-theme hydandata-light-theme) t)
   (add-to-list 'my-package-list '(color-theme-sanityinc-tomorrow color-theme-sanityinc-tomorrow) t)
   #+END_SRC
