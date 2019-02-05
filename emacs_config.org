@@ -232,7 +232,6 @@
    (global-nlinum-mode 0)                  ;显示行号
    (column-number-mode 1)                  ;显示列号
    (display-time)                          ;显示时间
-   (hlinum-activate)                       ;高亮当前行号
    (modify-all-frames-parameters           ;使用更好看的光标
     (list (cons 'cursor-type 'bar)))
    (set-face-attribute 'hl-line nil :background "gray5")
@@ -268,18 +267,6 @@
    主题设置，包含 color-theme 和 mode-line 的美化
    #+BEGIN_SRC emacs-lisp
    (load-theme 'sanityinc-tomorrow-eighties t)
-   (setq sml/name-width 20)         ;mode-line 文件名最大长度
-   (setq sml/mode-width 'nil)       ;mode-line 中不显示 minor-mode
-   (setq sml/shorten-directory t)   ;mode-line 中文件名超出长度时折叠
-   (setq sml/shorten-modes t)       ;mode-line 中 mode 信息超出长度时折叠
-   (setq sml/no-confirm-load-theme t)
-   (sml/setup)
-   (setq powerline-arrow-shape 'curve)
-   (setq powerline-default-separator-dir '(right . left))
-   (sml/apply-theme 'powerline)
-   (add-to-list 'sml/replacer-regexp-list '("^~/Projects/" ":P:"))
-   (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/" ":DB:"))
-   (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/org" ":ORG:"))
    #+END_SRC
 
    然后默认将 Emacs 最大化
@@ -510,28 +497,6 @@
                  'comint-previous-input)
                (define-key inferior-octave-mode-map [down]
                  'comint-next-input)))
-   #+END_SRC
-
-** Golang
-
-   #+BEGIN_SRC emacs-lisp
-   (defun my-go-mode-hook ()
-     ;; Call Gofmt before saving
-     (add-hook 'before-save-hook 'gofmt-before-save)
-     ;; Godef jump key binding
-     (local-set-key (kbd "M-.") 'godef-jump))
-   (add-hook 'go-mode-hook 'my-go-mode-hook)
-   #+END_SRC
-
-** Octave
-
-   #+BEGIN_SRC emacs-lisp
-   (defun my-octave-mode-config ()
-     (setq indent-tabs-mode nil
-           octave-auto-indent t
-           octave-block-offset 4))
-   (add-hook 'octave-mode-hook 'my-octave-mode-config)
-   (add-to-list 'auto-mode-alist '("\\.m\\'" . octave-mode))
    #+END_SRC
 
 * Org-mode 设置
@@ -1201,7 +1166,6 @@
 
   ;; coding
   (global-set-key (kbd "M-;") 'comment-dwim-line)
-  (global-set-key (kbd "C-c s") 'sr-speedbar-toggle)
 
   ;; org-mode
   (global-set-key (kbd "C-c b") 'org-iswitchb)
