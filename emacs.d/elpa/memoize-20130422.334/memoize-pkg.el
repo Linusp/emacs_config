@@ -1,1 +1,0 @@
-(define-package "memoize" "20130422.334" "Memoization functions * lexicalbinding: t *"  'nil  :url "https://github.com/skeeto/emacs-memoize" )

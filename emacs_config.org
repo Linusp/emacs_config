@@ -1,5 +1,14 @@
 #+TITLE: Emacs 配置
 
+* 一些待考虑进行安装的插件
+
+  - symbol-overlay: 能高亮自己定制的关键词，感觉可以替代 hl-todo
+  - git-gutter+: 说是支持了 git-gutter 暂时还没支持的一些 feature
+  - key-chord: 似乎能把固定的按键序列映射为 emacs 函数/命令的样子，没有实际用过
+  - hydra: abo-abo 写的另外一个插件，用来简化快捷键序列
+  - pdf-tools: 懒猫写的 PDF 阅读插件
+  - ob-async: 能让 org babel 的代码异步执行的插件，用过，但还没真正用起来
+
 * 初始化设置
 
   启动 server 模式，为后面的 edit-server 以及终端使用 emacsclient 做准备
@@ -58,21 +67,8 @@
 
   这些是和界面、外观相关的一些插件
   #+BEGIN_SRC emacs-lisp
-  (add-to-list 'my-package-list '(hlinum hlinum) t)
   (add-to-list 'my-package-list '(nlinum nlinum) t)
-  (add-to-list 'my-package-list
-             '(highlight-parentheses highlight-parentheses)
-             t)
-  (add-to-list 'my-package-list '(hl-todo hl-todo) t)
-  (add-to-list 'my-package-list '(htmlize htmlize) t)
-  (add-to-list 'my-package-list '(pretty-symbols pretty-symbols) t)
   (add-to-list 'my-package-list '(color-theme color-theme) t)
-  (add-to-list 'my-package-list '(powerline powerline) t)
-  (add-to-list 'my-package-list '(smart-mode-line smart-mode-line) t)
-  (add-to-list 'my-package-list
-             '(smart-mode-line-powerline-theme smart-mode-line-powerline-theme)
-             t)
-  (add-to-list 'my-package-list '(all-the-icons all-the-icons) t)
   (add-to-list 'my-package-list '(color-theme-modern color-theme-morden) t)
   (add-to-list 'my-package-list '(hydandata-light-theme hydandata-light-theme) t)
   (add-to-list 'my-package-list '(color-theme-sanityinc-tomorrow color-theme-sanityinc-tomorrow) t)
@@ -80,43 +76,37 @@
 
   各种 major-mode，包含一些编程语言的支持
   #+BEGIN_SRC emacs-lisp
-  (add-to-list 'my-package-list '(emmet-mode emmet-mode) t)
   (add-to-list 'my-package-list '(graphviz-dot-mode graphviz-dot-mode) t)
   (add-to-list 'my-package-list '(js2-mode js2-mode) t)
-  (add-to-list 'my-package-list '(skewer-mode skewer-mode) t)
   (add-to-list 'my-package-list '(markdown-mode markdown-mode) t)
   (add-to-list 'my-package-list '(slime slime) t)
   (add-to-list 'my-package-list '(flycheck flycheck) t)
+  (add-to-list 'my-package-list '(cypher-mode cypher-mode) t)
+  (add-to-list 'my-package-list '(plantuml-mode plantuml-mode) t)
+  (add-to-list 'my-package-list '(restclient restclient) t)
   #+END_SRC
 
   org-mode 相关
   #+BEGIN_SRC emacs-lisp
   (add-to-list 'my-package-list '(ob org-plus-contrib) t)
-  (add-to-list 'my-package-list '(org-ref org-ref) t)
-  (add-to-list 'my-package-list '(zotxt zotxt) t)
   (add-to-list 'my-package-list '(ob-ipython ob-ipython) t)
-  (add-to-list 'my-package-list '(epresent epresent) t)
-  (add-to-list 'my-package-list '(org-bullets org-bullets) t)
+  (add-to-list 'my-package-list '(ob-cypher ob-cypher) t)
+  (add-to-list 'my-package-list '(ob-restclient ob-restclient) t)
+  (add-to-list 'my-package-list '(anki-editor anki-editor) t)
   #+END_SRC
 
   下面的则是一些效率相关的插件
   #+BEGIN_SRC emacs-lisp
-  (add-to-list 'my-package-list '(smex smex) t)
   (add-to-list 'my-package-list '(ag ag) t)
   (add-to-list 'my-package-list '(counsel counsel) t)
   (add-to-list 'my-package-list '(avy avy) t)
   (add-to-list 'my-package-list '(expand-region expand-region) t)
   (add-to-list 'my-package-list '(helm-utils helm) t)
   (add-to-list 'my-package-list '(helm helm-core) t)
-  (add-to-list 'my-package-list '(helm-ag helm-ag) t)
-  (add-to-list 'my-package-list '(helm-org-rifle helm-org-rifle) t)
-  (add-to-list 'my-package-list '(helm-swoop helm-swoop) t)
   (add-to-list 'my-package-list '(swiper ivy) t)
   (add-to-list 'my-package-list '(magit magit) t)
-  (add-to-list 'my-package-list '(symbol-overlay symbol-overlay) t)
   (add-to-list 'my-package-list '(py-autopep8 py-autopep8) t)
   (add-to-list 'my-package-list '(yafolding yafolding) t)
-  (add-to-list 'my-package-list '(git-gutter git-gutter) t)
   #+END_SRC
 
   自动补全，使用 yasnippet 和 company，因为不用 auto-complete 这个包，就不用安装 jedi 了，company-jedi 会附带安装上 jedi-core，这就够了，jedi 这个包是使用 auto-complete 的。
@@ -129,18 +119,11 @@
 
   auto-virtualenvwrapper，可以根据打开的 python 文件，找到对应的 venv，然后激活这个 venv，用的是 virtualenvwrapper 这个包，所以把这个也加上
   #+BEGIN_SRC emacs-lisp
-  (add-to-list 'my-package-list '(virtualenvwrapper virtualenvwrapper) t)
-  (add-to-list 'my-package-list '(auto-virtualenvwrapper auto-virtualenvwrapper) t)
-  #+END_SRC
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/virtualenvwrapper.el/")
+  (require 'virtualenvwrapper)
 
-  不过要注意的是，这个 auto-virtualenvwrapper 里的 auto-virtualenvwrapper--project-root-vc 方法有 bug，修复如下
-  #+BEGIN_SRC emacs-lisp
-  (defun auto-virtualenvwrapper--project-root-vc ()
-    "Return vc root if file is in version control."
-    (message "find git root: %s" (vc-find-root (or (buffer-file-name) "") ".git"))
-    (or
-     (vc-find-root (or (buffer-file-name) "") ".git")
-     (vc-find-root (or (buffer-file-name) "") ".hg")))
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/auto-virtualenvwrapper.el/")
+  (require 'auto-virtualenvwrapper)
   #+END_SRC
 
   edit-server
@@ -173,6 +156,45 @@
 
   (add-to-list 'load-path "~/.emacs.d/site-lisp/org-brain/")
   (require 'org-brain)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-application-framework/")
+  (require 'eaf)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/moody/")
+  (require 'moody)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/minions/")
+  (require 'minions)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/smex/")
+  (require 'smex)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/helm-org-rifle/")
+  (require 'helm-org-rifle)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-helm-ag/")
+  (require 'helm-ag)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/helm-swoop/")
+  (require 'helm-swoop)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/highlight-parentheses.el/")
+  (require 'highlight-parentheses)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/hl-todo/")
+  (require 'hl-todo)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/pretty-symbols")
+  (require 'pretty-symbols)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-htmlize")
+  (require 'htmlize)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/git-gutter")
+  (require 'git-gutter)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/org-bullets")
+  (require 'org-bullets)
   #+END_SRC
 
 * 外观设置

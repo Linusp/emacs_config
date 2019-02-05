@@ -1,3 +1,57 @@
 [submodule "emacs.d/site-lisp/org-brain"]
 	path = emacs.d/site-lisp/org-brain
 	url = git@github.com:Kungsgeten/org-brain
+[submodule "emacs.d/site-lisp/awesome-tray"]
+	path = emacs.d/site-lisp/awesome-tray
+	url = https://github.com/manateelazycat/awesome-tray
+[submodule "emacs.d/site-lisp/emacs-application-framework"]
+	path = emacs.d/site-lisp/emacs-application-framework
+	url = https://github.com/manateelazycat/emacs-application-framework
+[submodule "emacs.d/site-lisp/auto-virtualenvwrapper.el"]
+	path = emacs.d/site-lisp/auto-virtualenvwrapper.el
+	url = https://github.com/robert-zaremba/auto-virtualenvwrapper.el
+[submodule "emacs.d/site-lisp/virtualenvwrapper.el"]
+	path = emacs.d/site-lisp/virtualenvwrapper.el
+	url = https://github.com/porterjamesj/virtualenvwrapper.el
+[submodule "emacs.d/site-lisp/moody"]
+	path = emacs.d/site-lisp/moody
+	url = https://github.com/tarsius/moody
+[submodule "emacs.d/site-lisp/minions"]
+	path = emacs.d/site-lisp/minions
+	url = https://github.com/tarsius/minions
+[submodule "emacs.d/site-lisp/org-capture-pop-frame"]
+	path = emacs.d/site-lisp/org-capture-pop-frame
+	url = https://github.com/tumashu/org-capture-pop-frame
+[submodule "emacs.d/site-lisp/smex"]
+	path = emacs.d/site-lisp/smex
+	url = https://github.com/nonsequitur/smex
+[submodule "emacs.d/site-lisp/helm-org-rifle"]
+	path = emacs.d/site-lisp/helm-org-rifle
+	url = https://github.com/alphapapa/helm-org-rifle
+[submodule "emacs.d/site-lisp/emacs-helm-ag"]
+	path = emacs.d/site-lisp/emacs-helm-ag
+	url = https://github.com/syohex/emacs-helm-ag
+[submodule "emacs.d/site-lisp/helm-swoop"]
+	path = emacs.d/site-lisp/helm-swoop
+	url = https://github.com/ShingoFukuyama/helm-swoop
+[submodule "emacs.d/site-lisp/highlight-parentheses.el"]
+	path = emacs.d/site-lisp/highlight-parentheses.el
+	url = https://github.com/tsdh/highlight-parentheses.el
+[submodule "emacs.d/site-lisp/hl-todo"]
+	path = emacs.d/site-lisp/hl-todo
+	url = https://github.com/tarsius/hl-todo
+[submodule "emacs.d/site-lisp/pretty-symbols"]
+	path = emacs.d/site-lisp/pretty-symbols
+	url = https://github.com/drothlis/pretty-symbols
+[submodule "emacs.d/site-lisp/emacs-htmlize"]
+	path = emacs.d/site-lisp/emacs-htmlize
+	url = https://github.com/hniksic/emacs-htmlize
+[submodule "emacs.d/site-lisp/git-gutter"]
+	path = emacs.d/site-lisp/git-gutter
+	url = https://github.com/syohex/emacs-git-gutter
+[submodule "emacs.d/site-lisp/org-bullets"]
+	path = emacs.d/site-lisp/org-bullets
+	url = https://github.com/sabof/org-bullets
+[submodule "emacs.d/site-lisp/org-protocol-capture-html"]
+	path = emacs.d/site-lisp/org-protocol-capture-html
+	url = https://github.com/alphapapa/org-protocol-capture-html

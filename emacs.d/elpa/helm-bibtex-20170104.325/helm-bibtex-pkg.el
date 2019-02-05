@@ -1,1 +1,0 @@
-(define-package "helm-bibtex" "20170104.325" "A bibliography manager based on m"  '((helm "1.5.5") (parsebib "1.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5") (biblio "0.2") ) :url "https://github.com/tmalsburg/helm-bibtex" )
