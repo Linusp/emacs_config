@@ -234,8 +234,8 @@
    (display-time)                          ;显示时间
    (modify-all-frames-parameters           ;使用更好看的光标
     (list (cons 'cursor-type 'bar)))
-   (set-face-attribute 'hl-line nil :background "gray5")
    (global-hl-line-mode 1)                 ;开启当前行高亮
+   (set-face-attribute 'hl-line nil :background "gray5")
    (global-git-gutter-mode 1)              ;开启 git-gutter
    #+END_SRC
 
