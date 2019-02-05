@@ -293,6 +293,13 @@
   (setq windmove-wrap-around t)
   #+END_SRC
 
+  配置一下 Emacs Application Framework
+  #+BEGIN_SRC emacs-lisp
+  (setq eaf-http-proxy-host "127.0.0.1")
+  (setq eaf-http-proxy-port "1235")
+  (setq eaf-grip-token "fbf0cf8688992e6045c17d45b43bfcdcce99d403")
+  #+END_SRC
+
 * 编程设置
 
 ** 杂项
