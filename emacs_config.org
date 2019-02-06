@@ -979,19 +979,6 @@
 
    #+END_SRC
 
-** 论文管理
-
-   #+BEGIN_SRC emacs-lisp
-   (setq reftex-default-bibliography '("~/Dropbox/bibliography/references.bib")) ;
-
-   ;; see org-ref for use of these variables
-   (setq org-ref-default-bibliography '("~/Dropbox/bibliography/references.bib")
-         org-ref-bibliography-notes "~/Dropbox/bibliography/notes.org"
-         org-ref-pdf-directory "~/Dropbox/bibliography/bibtex-pdfs/")
-
-   (setq bibtex-completion-bibliography "~/Dropbox/bibliography/references.bib"
-         bibtex-completion-library-path "~/Dropbox/bibliography/bibtex-pdfs/")
-   #+END_SRC
 * 其他
 
 ** Edit Serevr
