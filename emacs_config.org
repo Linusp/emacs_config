@@ -192,6 +192,14 @@
 
   (add-to-list 'load-path "~/.emacs.d/site-lisp/org-bullets")
   (require 'org-bullets)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/telega.el") ;依赖 svg
+  (require 'telega)
+  (setq telega-proxies
+        (list
+         '(:server "localhost" :port 1235 :enable t :type (:@type "proxyTypeHttp"))
+         '(:server "localhost" :port 1080 :enable t :type (:@type "proxyTypeSocks5"))
+         ))
   #+END_SRC
 
 * 外观设置

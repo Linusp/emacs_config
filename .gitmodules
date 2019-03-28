@@ -55,3 +55,6 @@
 [submodule "emacs.d/site-lisp/org-protocol-capture-html"]
 	path = emacs.d/site-lisp/org-protocol-capture-html
 	url = https://github.com/alphapapa/org-protocol-capture-html
+[submodule "emacs.d/site-lisp/telega.el"]
+	path = emacs.d/site-lisp/telega.el
+	url = https://github.com/zevlg/telega.el
