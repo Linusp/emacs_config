@@ -635,6 +635,7 @@
                                 (ruby . t)
                                 (plantuml . t)
                                 (cypher . t)
+                                (sql . t)
                                 (emacs-lisp . t))
     )
    #+end_src
