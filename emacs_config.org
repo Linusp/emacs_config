@@ -201,7 +201,8 @@
    #+BEGIN_SRC emacs-lisp
    (set-language-environment 'UTF-8)
    (set-locale-environment "UTF-8")
-   (set-default-font "Dejavu Sans Mono 12")
+   ;; Emacs 23.1 set-default-font -> set-frame-font
+   (set-frame-font "Dejavu Sans Mono 12" nil t)
    (set-fontset-font "fontset-default" 'unicode "WenQuanYi Micro Hei Mono 15");
    (setq face-font-rescale-alist '(
                                    ("WenQuanYi Micro Hei Mono" . 1.3)
