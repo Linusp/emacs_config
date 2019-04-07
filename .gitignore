@@ -19,6 +19,10 @@ emacs.d/tramp
 emacs.d/request/
 emacs.d/session.*
 emacs.d/url/
+emacs.d/eaf/
+emacs.d/eshell/
+emacs.d/tutorial/
+emacs.d/*.org
 
 .org-id-locations
 .python-environments
