@@ -194,6 +194,7 @@
   (require 'org-bullets)
 
   (add-to-list 'load-path "~/.emacs.d/site-lisp/telega.el") ;依赖 svg
+  (require 'svg)
   (require 'telega)
   (setq telega-proxies
         (list
