@@ -4,7 +4,7 @@
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
 ;;;### (autoloads nil "graphviz-dot-mode" "graphviz-dot-mode.el"
-;;;;;;  (22641 6450 678675 424000))
+;;;;;;  (23720 49952 562 757000))
 ;;; Generated autoloads from graphviz-dot-mode.el
 
 (autoload 'graphviz-dot-mode "graphviz-dot-mode" "\
@@ -52,6 +52,21 @@ This mode can be customized by running \\[graphviz-dot-customize].
 
 Turning on Graphviz Dot mode calls the value of the variable
 `graphviz-dot-mode-hook' with no args, if that value is non-nil.
+
+\(fn)" t nil)
+
+(autoload 'graphviz-dot-preview "graphviz-dot-mode" "\
+
+
+\(fn)" t nil)
+
+(autoload 'graphviz-turn-on-live-preview "graphviz-dot-mode" "\
+Turns on live preview on save.
+
+\(fn)" t nil)
+
+(autoload 'graphviz-turn-off-live-preview "graphviz-dot-mode" "\
+Turns off live preview on save.
 
 \(fn)" t nil)
 
