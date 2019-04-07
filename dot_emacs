@@ -14,15 +14,7 @@
     (package-refresh-contents)
     (package-install 'org)))
 
-(when (not (require 'org-dotemacs nil :noerror))
-  (progn
-    (call-process "notify-send" nil t nil "org-dotemacs is not installed")
-    (setq url-http-attempt-keepalives nil)
-    (package-refresh-contents)
-    (package-install 'org-dotemacs)))
-
-(setq org-dotemacs-default-file "/home/emonster/Projects/emacs_config/emacs_config.org")
-(org-dotemacs-load-default)
+(org-babel-load-file "/home/emonster/Projects/emacs_config/emacs_config.org")
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
