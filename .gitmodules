@@ -58,3 +58,6 @@
 [submodule "emacs.d/site-lisp/telega.el"]
 	path = emacs.d/site-lisp/telega.el
 	url = https://github.com/zevlg/telega.el
+[submodule "emacs.d/site-lisp/swiper"]
+	path = emacs.d/site-lisp/swiper
+	url = https://github.com/abo-abo/swiper.git

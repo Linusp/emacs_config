@@ -98,12 +98,10 @@
   下面的则是一些效率相关的插件
   #+BEGIN_SRC emacs-lisp
   (add-to-list 'my-package-list '(ag ag) t)
-  (add-to-list 'my-package-list '(counsel counsel) t)
   (add-to-list 'my-package-list '(avy avy) t)
   (add-to-list 'my-package-list '(expand-region expand-region) t)
   (add-to-list 'my-package-list '(helm-utils helm) t)
   (add-to-list 'my-package-list '(helm helm-core) t)
-  (add-to-list 'my-package-list '(swiper ivy) t)
   (add-to-list 'my-package-list '(magit magit) t)
   (add-to-list 'my-package-list '(py-autopep8 py-autopep8) t)
   (add-to-list 'my-package-list '(yafolding yafolding) t)
@@ -201,6 +199,9 @@
          '(:server "localhost" :port 1235 :enable t :type (:@type "proxyTypeHttp"))
          '(:server "localhost" :port 1080 :enable t :type (:@type "proxyTypeSocks5"))
          ))
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/swiper")
+  (require 'swiper)
+  (require 'counsel)
   #+END_SRC
 
 * 外观设置
@@ -1172,7 +1173,7 @@
   (global-set-key (kbd "C-c j") 'avy-goto-word-or-subword-1)
   (global-set-key (kbd "C-c h o") 'helm-org-rifle)  ;搜索 org 文件
   (global-set-key (kbd "C-c h s") 'helm-do-grep-ag) ;使用 ag 搜索目录
-  (global-set-key (kbd "C-s") 'swiper)              ;不使用内置的 search 而是使用 swiper
+  (global-set-key (kbd "C-s") 'swiper-isearch) ;不使用内置的 search 而是使用 swiper
   (setq ivy-display-style 'fancy)
 
   ;; coding
