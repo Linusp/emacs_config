@@ -23,7 +23,11 @@ emacs.d/eaf/
 emacs.d/eshell/
 emacs.d/tutorial/
 emacs.d/*.org
+emacs.d/*.data
 
 .org-id-locations
 .python-environments
 ac-comphist.dat
+
+emacs_config.el
+
