@@ -875,6 +875,8 @@
    Org Brain 设置
    #+BEGIN_SRC emacs-lisp
    (setq org-brain-path "~/Dropbox/org/brain")
+   (setq org-id-track-globally t)
+   (setq org-id-locations-file "~/Dropbox/org/.org-id-locations")
    #+END_SRC
 
    然后是 agenda 相关的设置
