@@ -566,6 +566,8 @@
            org-image-actual-width nil
            org-completion-use-ido t
            org-html-checkbox-type 'html
+           ;; 设置 org-preview-latex-fragment 时生成的预览图片所在的目录
+           org-preview-latex-image-directory "~/Pictures/ltximg/"
            )
      (setq-default org-download-image-dir "~/Dropbox/org/images")
      (setq-default org-download-heading-lvl nil)
@@ -579,6 +581,12 @@
    (font-lock-add-keywords 'org-mode
                            '(("^ +\\([-*]\\) "
                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+
+   ;; 插入/修改图片后马上显示
+   (defun shk-fix-inline-images ()
+        (when org-inline-image-overlays
+          (org-redisplay-inline-images)))
+   (add-hook 'org-babel-after-execute-hook 'shk-fix-inline-images)
    #+END_SRC
 
    设置默认的 org 文件
@@ -684,6 +692,10 @@
 
 ** 个人管理
 
+   设置 =org-capture-bookmark= 为 nil，不要在 bookmarks 里记一个 last stored capture 的特殊书签
+   (setq org-capture-bookmark nil)
+   #+END_SRC
+
    设置基础的任务状态关键词，其中 "DONE" 和 "ABORT" 表示终结状态，并且用 "@" 设置为在进入终结状态时，要求输入笔记；用 "!" 设置从终结状态变化为其他状态时自动添加变更信息。
    #+BEGIN_SRC emacs-lisp
    (setq org-use-fast-todo-selection t)
@@ -708,67 +720,21 @@
      (add-to-list 'org-capture-templates
                   '("i" "Inbox"
                     entry (file "~/Dropbox/org/inbox.org")
-                    "* %U - %^{heading} %^g\n %?\n"
-                    :empty-lines 1
-                    ))
+                    "* %U - %^{title} %^g\n\n %?"
+                    :empty-lines 1))
      #+END_SRC
-
    + Task: 用来记录任务
 
      嗯没错，时隔多年，我又要启用 task 系统了！
 
-     为所有任务设置两个字母的 key，并共享相同的前缀
-     #+BEGIN_SRC emacs-lisp
-     (add-to-list 'org-capture-templates '("t" "Tasks"))
-     #+END_SRC
-
-     增加普通任务
+     任务统一加到 Inbox 里，然后手工再做分类
      #+BEGIN_SRC emacs-lisp
      (add-to-list 'org-capture-templates
-                  '("ti" "General Task" entry
+                  '("t" "Tasks" entry
                     (file+olp "~/Dropbox/org/task.org" "Inbox")
-                    "* TODO %^{title}\nSCHEDULED: %^T DEADLINE: %^t\n\n  %?"
+                    "* TODO %^{title} %^g\n  %U\n\n  %?"
                     :empty-lines 1))
      #+END_SRC
-
-     增加书籍阅读任务
-     #+BEGIN_SRC emacs-lisp
-     (add-to-list 'org-capture-templates
-                  '("tb" "Book Reading Task" entry
-                    (file+olp "~/Dropbox/org/task.org" "Reading" "Book")
-                    "* TODO %^{title}\nSCHEDULED: %^T DEADLINE: %^t\n\n  %?"
-                    :empty-lines 1))
-     #+END_SRC
-
-     增加论文阅读任务
-     #+BEGIN_SRC emacs-lisp
-     (add-to-list 'org-capture-templates
-                  '("tp" "Paper Reading Task" entry
-                    (file+olp "~/Dropbox/org/task.org" "Reading" "Paper")
-                    "* TODO %^{title}\nSCHEDULED: %^T DEADLINE: %^t\n\n  %?"
-                    :empty-lines 1))
-     #+END_SRC
-
-     增加工作任务（仅用来做任务管理，具体工作内容还是在journal.org中记录）
-     #+BEGIN_SRC emacs-lisp
-     (add-to-list 'org-capture-templates
-                  '("tw" "Work Task" entry
-                    (file+olp "~/Dropbox/org/task.org" "Work")
-                    "* TODO %^{title}\nSCHEDULED: %^T DEADLINE: %^t\n\n  %?"
-                    :clock-in t :clock-resume t :empty-lines 1))
-     #+END_SRC
-
-     然后，在 task.org 中增加一个 Knowledge 的章节，用来督促自己定期整理知识，形成 anki 卡片！
-
-     增加写作任务
-     #+BEGIN_SRC emacs-lisp
-     (add-to-list 'org-capture-templates
-                  '("tB" "Blog Writing Task" entry
-                    (file+olp "~/Dropbox/org/task.org" "Knowledge" "Blog")
-                    "* TODO %^{title}\nSCHEDULED: %^T DEADLINE: %^t\n\n  %?"
-                    :empty-lines 1))
-     #+END_SRC
-
    + Web: 用来收集 web 内容
 
      用的是 org-protocol
@@ -855,21 +821,6 @@
                   '("c" "Cards"))
      #+END_SRC
 
-     词汇卡，需要在 anki 中建好 Vocabulary 这个记忆库，使用 words 这个笔记类型。
-     #+BEGIN_SRC emacs-lisp
-     (add-to-list 'org-capture-templates
-                  `("cv" "Vocabulary"
-                    entry (file+headline "~/Dropbox/org/cards.org" "Vocabulary")
-                    ,(concat "* %^{heading|Item} :note\n"
-                           "  :PROPERTIES:\n"
-                           "  :ANKI_DECK: Vocabulary\n"
-                           "  :ANKI_NOTE_TYPE: words\n"
-                           "  :END:\n\n"
-                           "** 单词\n\n   %?\n** 释义\n\n** 例句\n\n** 音标\n")
-                   :empty-lines 1
-                   ))
-     #+END_SRC
-
      人名卡，需要在 anki 中建好 Person 这个记忆库，使用 person 这个笔记类型。
      #+BEGIN_SRC emacs-lisp
      (add-to-list 'org-capture-templates
@@ -900,9 +851,25 @@
                     ))
      #+END_SRC
 
+     由于在新建卡片的时候，需要将部分文字遮蔽，所以写一个函数来做这个事情
+     #+BEGIN_SRC emacs-lisp
+     (defun z/anki-mark-region ()
+       (interactive)
+       (let ((start (region-beginning))
+             (end (region-end)))
+         (progn
+           (goto-char start)
+           (insert "{{c::")
+           (goto-char (+ end 5))
+           (insert "}}")
+           (goto-char (+ start 3))
+         )))
+     #+END_SRC
+
    在上述模板中有时候需要填 tag，我把 tag 的举例设置得大一些，这样当标题比较长的时候不会影响阅读
    #+BEGIN_SRC emacs-lisp
    (setq org-tags-column -100)
+   (add-hook 'org-capture-mode-hook #'org-align-all-tags)
    #+END_SRC
 
    Org Brain 设置
