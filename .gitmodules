@@ -61,3 +61,6 @@
 [submodule "emacs.d/site-lisp/swiper"]
 	path = emacs.d/site-lisp/swiper
 	url = https://github.com/abo-abo/swiper.git
+[submodule "emacs.d/site-lisp/toc-org"]
+	path = emacs.d/site-lisp/toc-org
+	url = https://github.com/snosov1/toc-org.git

@@ -1,5 +1,34 @@
 #+TITLE: Emacs 配置
 
+* Table of Contents                                                                            :TOC:
+- [[#一些待考虑进行安装的插件][一些待考虑进行安装的插件]]
+- [[#初始化设置][初始化设置]]
+- [[#扩展安装和加载][扩展安装和加载]]
+- [[#外观设置][外观设置]]
+  - [[#字体][字体]]
+  - [[#界面][界面]]
+- [[#功能增强][功能增强]]
+- [[#编程设置][编程设置]]
+  - [[#杂项][杂项]]
+  - [[#模板和自动补全][模板和自动补全]]
+  - [[#cc][C/C++]]
+  - [[#python][Python]]
+  - [[#lisp][Lisp]]
+- [[#org-mode-设置][Org-mode 设置]]
+  - [[#基础设置][基础设置]]
+  - [[#babel-设置][babel 设置]]
+  - [[#个人管理][个人管理]]
+  - [[#写作设置][写作设置]]
+- [[#其他][其他]]
+  - [[#edit-serevr][Edit Serevr]]
+- [[#扩展无关的函数定义][扩展无关的函数定义]]
+  - [[#对注释和反注释的改进][对注释和反注释的改进]]
+  - [[#行区域上下移动][行/区域上下移动]]
+  - [[#显示非-ascii-字符][显示非 ASCII 字符]]
+  - [[#插入-uuid][插入 uuid]]
+  - [[#查询词典][查询词典]]
+- [[#全局快捷键设置][全局快捷键设置]]
+
 * 一些待考虑进行安装的插件
 
   - symbol-overlay: 能高亮自己定制的关键词，感觉可以替代 hl-todo
@@ -202,6 +231,9 @@
   (add-to-list 'load-path "~/.emacs.d/site-lisp/swiper")
   (require 'swiper)
   (require 'counsel)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/toc-org")
+  (require 'toc-org)
   #+END_SRC
 
 * 外观设置
@@ -533,7 +565,7 @@
            org-html-checkbox-type 'html
            )
      (org-bullets-mode 1)
-     (anki-editor-mode 1)
+     (toc-org-mode 1)
      )
    (add-hook 'org-mode-hook 'my-org-mode-config)
    (font-lock-add-keywords 'org-mode
