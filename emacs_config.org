@@ -1152,20 +1152,25 @@
   #+BEGIN_SRC emacs-lisp
   (defalias 'z/hs 'hs-toggle-hiding)
   (defalias 'z/bms 'bookmark-set)
-  (defalias 'z/bml 'bookmark-bmenu-list)
+  (defalias 'z/bml 'helm-filtered-bookmarks)
   (defalias 'z/fs 'toggle-frame-fullscreen)
   (defalias 'z/mw 'toggle-frame-maximized)
   (defalias 'z/evalb 'eval-buffer)
   (defalias 'z/evals 'eval-last-sexp)
   (defalias 'z/latex 'org-preview-latex-fragment)
   (defalias 'z/image 'org-toggle-inline-images)
+  (defalias 'z/mark 'z/anki-mark-region)
+  ;; magit
   (defalias 'z/gs 'magit-status)
   (defalias 'z/cm 'magit-commit)
   (defalias 'z/rebase 'magit-rebase-interactive)
+  (defalias 'z/gl 'magit-log-head)
   (defalias 'z/app 'counsel-linux-app)
   (defalias 'z/repl 'replace-string)
   (defalias 'z/repr 'replace-regexp)
   (defalias 'z/install 'package-install)
+  (defalias 'z/oa 'org-archive-subtree)
+  (defalias 'z/time 'org-time-stamp-inactive)
   #+END_SRC
 
   用于编辑的一些快捷键
@@ -1192,6 +1197,7 @@
   (global-set-key (kbd "M-;") 'comment-dwim-line)
 
   ;; org-mode
+  (global-set-key (kbd "C-c a") 'my-agenda-list)
   (global-set-key (kbd "C-c b") 'org-iswitchb)
   (global-set-key (kbd "C-c c") 'org-capture)
   (global-set-key (kbd "C-c l") 'org-store-link)
