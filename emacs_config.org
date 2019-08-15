@@ -883,8 +883,18 @@
    #+BEGIN_SRC emacs-lisp
    ;; (setq org-agenda-ndays 1)
    ;; org-agenda-ndays 自 org 7.8 后就失效了
-   (setq org-agenda-span 'day)
-   (setq org-agenda-files (list "~/Dropbox/org/task.org"))
+   (setq org-agenda-span 'week)
+   (setq org-agenda-files (list "~/Dropbox/org/task.org" "~/Dropbox/org/journal/inbox.org"))
+   (setq org-deadline-warning-days 7)
+   (setq org-agenda-todo-ignore-deadlines 'far)
+   (setq org-agenda-inhibit-startup t)
+   (setq org-agenda-skip-scheduled-if-done t)
+   (setq org-agenda-skip-deadline-if-done t)
+   (defun my-agenda-list ()
+     (interactive)
+     (progn
+       (org-agenda-list)
+       (delete-other-windows)))
    #+END_SRC
 
    clock 相关的设置
@@ -905,21 +915,14 @@
    #+BEGIN_SRC emacs-lisp
    (setq org-refile-use-outline-path 'file)
    (setq org-refile-targets
-         '(("~/Dropbox/org/inbox.org" :level . 1)
-           ("~/Dropbox/org/journal/inbox.org" :level . 1)
-           ("~/Dropbox/org/memo.org" :level . 1)
-           ("~/Dropbox/org/notes/inbox.org" :level . 1)
-           ("~/Dropbox/org/notes/nlp.org" :level . 1)
-           ("~/Dropbox/org/notes/linux.org" :level . 1)
-           ("~/Dropbox/org/notes/emacs.org" :level . 1)
-           ("~/Dropbox/org/notes/math.org" :level . 1)
-           ("~/Dropbox/org/notes/work.org" :level . 1)
-           ("~/Dropbox/org/notes/latex.org" :level . 1)
-           ("~/Dropbox/org/notes/rss.org" :level . 1)
-           ("~/Dropbox/org/notes/economics.org" :level . 1)
-           ("~/Dropbox/org/task.org" :level . 2)
-           ("~/Dropbox/org/notes/machine-learning.org" :level . 1)
-           ("~/Dropbox/org/notes/python.org" :level . 1)))
+         (append
+          '(("~/Dropbox/org/inbox.org" :level . 1)
+            ("~/Dropbox/org/journal/inbox.org" :level . 1)
+            ("~/Dropbox/org/memo.org" :level . 1)
+            ("~/Dropbox/org/task.org" :level . 1)
+            ("~/Dropbox/org/ideas.org" :level . 1)
+            ("~/Dropbox/org/task.org" :level . 2))
+          (mapcar (lambda (file) (cons file (cons :level 1))) (directory-files "~/Dropbox/org/notes/" t "org"))))
    #+END_SRC
 
    设置 helm-org-rifle
