@@ -64,3 +64,6 @@
 [submodule "emacs.d/site-lisp/toc-org"]
 	path = emacs.d/site-lisp/toc-org
 	url = https://github.com/snosov1/toc-org.git
+[submodule "emacs.d/site-lisp/org-download"]
+	path = emacs.d/site-lisp/org-download
+	url = https://github.com/Linusp/org-download

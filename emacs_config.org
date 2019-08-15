@@ -234,6 +234,9 @@
 
   (add-to-list 'load-path "~/.emacs.d/site-lisp/toc-org")
   (require 'toc-org)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/org-download")
+  (require 'org-download)
   #+END_SRC
 
 * 外观设置
@@ -564,10 +567,15 @@
            org-completion-use-ido t
            org-html-checkbox-type 'html
            )
+     (setq-default org-download-image-dir "~/Dropbox/org/images")
+     (setq-default org-download-heading-lvl nil)
+     (setq-default org-download-timestamp "_%Y%m%d_%H%M%s")
+     (setq-default org-download-image-org-width 800)
      (org-bullets-mode 1)
      (toc-org-mode 1)
      )
    (add-hook 'org-mode-hook 'my-org-mode-config)
+   (add-hook 'dired-mode-hook 'org-download-enable)
    (font-lock-add-keywords 'org-mode
                            '(("^ +\\([-*]\\) "
                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
