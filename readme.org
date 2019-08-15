@@ -6,6 +6,10 @@
 
    - Emacs: 26.1
 
+** 配置
+
+   见 [[file:emacs_config.org]]
+
 ** 使用方法
 
    项目结构如下
