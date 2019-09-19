@@ -245,6 +245,12 @@
   (require 'counsel-ffdata)
   #+END_SRC
 
+  安装 ob-cypher，支持在 org-mode 里执行 cypher 的代码
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/ob-cypher")
+  (require 'ob-cypher)
+  #+END_SRC
+
 * 外观设置
 
 ** 字体
