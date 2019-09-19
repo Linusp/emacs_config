@@ -67,3 +67,6 @@
 [submodule "emacs.d/site-lisp/org-download"]
 	path = emacs.d/site-lisp/org-download
 	url = https://github.com/Linusp/org-download
+[submodule "emacs.d/site-lisp/counsel-ffdata"]
+	path = emacs.d/site-lisp/counsel-ffdata
+	url = https://github.com/cireu/counsel-ffdata.git

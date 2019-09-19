@@ -239,6 +239,12 @@
   (require 'org-download)
   #+END_SRC
 
+  安装 counsel-ffdata，在 Emacs 里浏览 Firefox 的书签和历史记录
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/counsel-ffdata")
+  (require 'counsel-ffdata)
+  #+END_SRC
+
 * 外观设置
 
 ** 字体
@@ -1171,6 +1177,8 @@
   (defalias 'z/install 'package-install)
   (defalias 'z/oa 'org-archive-subtree)
   (defalias 'z/time 'org-time-stamp-inactive)
+  (defalias 'z/ffh #'counsel-ffdata-firefox-history)
+  (defalias 'z/ffb #'counsel-ffdata-firefox-bookmarks)
   #+END_SRC
 
   用于编辑的一些快捷键
