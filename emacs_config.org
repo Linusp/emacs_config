@@ -119,7 +119,6 @@
   #+BEGIN_SRC emacs-lisp
   (add-to-list 'my-package-list '(ob org-plus-contrib) t)
   (add-to-list 'my-package-list '(ob-ipython ob-ipython) t)
-  (add-to-list 'my-package-list '(ob-cypher ob-cypher) t)
   (add-to-list 'my-package-list '(ob-restclient ob-restclient) t)
   (add-to-list 'my-package-list '(anki-editor anki-editor) t)
   #+END_SRC
