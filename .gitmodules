@@ -73,3 +73,6 @@
 [submodule "emacs.d/site-lisp/ob-cypher"]
 	path = emacs.d/site-lisp/ob-cypher
 	url = git@github.com:Linusp/ob-cypher.git
+[submodule "emacs.d/site-lisp/orgba"]
+	path = emacs.d/site-lisp/orgba
+	url = https://github.com/Fuco1/orgba.git
