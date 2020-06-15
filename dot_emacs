@@ -1,9 +1,11 @@
+(setq url-proxy-services
+   '(("http" . "localhost:1235")
+     ("https" . "localhost:1235")))
+
 (require 'package)
 (setq package-archives '())
-(add-to-list 'package-archives '("marmalade" . "https://marmalade-repo.org/packages/"))
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives '("melpa" . "https://stable.melpa.org/packages/") t)
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
-(add-to-list 'package-archives '("popkit" . "http://elpa.popkit.org/packages/"))
 (package-initialize)
 
 ;; install basic dependencies
