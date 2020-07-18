@@ -1,10 +1,11 @@
 ;;; zotxt.el --- Interface emacs with Zotero via the zotxt extension
 
-;; Copyright (C) 2010-2016 Erik Hetzner
+;; Copyright (C) 2010-2020 Erik Hetzner
 
 ;; Author: Erik Hetzner <egh@e6h.org>
 ;; Keywords: bib
-;; Version: 0.1.35
+;; Version: 5.0.5
+;; Package-Requires: ((emacs "24.3"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -28,22 +29,46 @@
 (eval-when-compile
   (require 'cl))
 (require 'json)
-(require 'request-deferred)
-
-(defvar zotxt-default-bibliography-style
-  "chicago-note-bibliography"
-  "Default bibliography style to use.")
+(require 'deferred)
+(require 'request)
 
 (defconst zotxt-url-base
   "http://127.0.0.1:23119/zotxt"
   "Base URL to contact.")
 
+(defconst  zotxt-quicksearch-method-params
+  '((:title-creator-year . "titleCreatorYear")
+    (:fields . "fields")
+    (:everything . "everything")))
+
 (defconst zotxt--json-formats
-  '(:easykey :betterbibtexkey :json)
+  '(:easykey :betterbibtexkey :json :paths :quickBib)
   "Formats to parse as JSON.")
+
+(defconst zotxt-quicksearch-method-names
+  '(("title, creator, year" . :title-creator-year)
+    ("fields" . :fields)
+    ("everything" . :everything)))
+
+(defconst zotxt-quicksearch-method-to-names
+  '((:title-creator-year . "title, creator, year")
+    (:fields . "fields")
+    (:everything . "everything")))
 
 (defvar zotxt--debug-sync nil
   "Use synchronous requests.  For debug only!")
+
+(defvar zotxt-default-bibliography-style
+  "chicago-note-bibliography"
+  "Default bibliography style to use.")
+
+
+(defun zotxt--deferred-handle-error (err)
+  "Deferred chain error handler.
+
+Prints ERR and checks if zotxt is installed."
+  (message "Caught error: %S" err)
+  (zotxt--check-server))
 
 (defun zotxt-mapcar-deferred (func lst)
   "Apply FUNC (which must return a deferred object), to each element of LST.
@@ -78,6 +103,33 @@ request.el is not decoding our responses as UTF-8.  Recode text as UTF-8 and par
   (if (string-match "/\\([^/]+\\)$" id)
       (format "0_%s" (match-string 1 id))))
 
+(defun zotxt--check-server ()
+  "Use the zotxt version endpoint to check if Zotero is running and zotxt is installed."
+  (let* ((response
+         (request
+           (format "%s/version" zotxt-url-base)
+           :sync t))
+         (status-code (request-response-status-code response)))
+    (unless (and status-code (= 200 status-code))
+      (error "Zotxt version endpoint not found; is Zotero running and zotxt installed?"))))
+
+(defun zotxt--request-deferred (url &rest args)
+  (let* ((d (deferred:new #'identity))
+         (callback-post (apply-partially
+                         (lambda (d &rest args)
+                           (deferred:callback-post
+                             d (plist-get args :response)))
+                         d))
+         (errorback-post (apply-partially
+                          (lambda (d &rest args)
+                            (deferred:errorback-post
+                             d (plist-get args :response)))
+                         d)))
+    (setq args (plist-put args :success callback-post))
+    (setq args (plist-put args :error errorback-post))
+    (apply #'request url args)
+    d))
+
 (defun zotxt-get-item-bibliography-deferred (item)
   "Retrieve the generated bibliography for ITEM (a plist).
 Use STYLE to specify a custom bibliography style.
@@ -100,6 +152,8 @@ For use only in a `deferred:$' chain."
                  ("format" . "bibliography")
                  ("style" . ,style))
        :parser #'zotxt--json-read
+       :error (function* (lambda (&rest args &key error-thrown &allow-other-keys)
+                           (deferred:errorback-post d error-thrown)))
        :success (function*
                  (lambda (&key data &allow-other-keys)
                    (let* ((style-key (intern (format ":%s" style)))
@@ -126,6 +180,8 @@ For use only in a `deferred:$' chain."
      :params '(("selected" . "selected")
                ("format" . "key"))
      :parser #'zotxt--json-read
+     :error (function* (lambda (&rest args &key error-thrown &allow-other-keys)
+                         (deferred:errorback-post d error-thrown)))
      :success (function*
                (lambda (&key data &allow-other-keys)
                      (deferred:callback-post
@@ -134,37 +190,28 @@ For use only in a `deferred:$' chain."
                                  data)))))
       d))
 
-(defconst zotxt-quicksearch-method-names
-  '(("title, creator, year" . :title-creator-year)
-    ("fields" . :fields)
-    ("everything" . :everything)))
-
-(defconst  zotxt-quicksearch-method-params
-  '((:title-creator-year . "titleCreatorYear")
-    (:fields . "fields")
-    (:everything . "everything")))
-
-(defconst zotxt-quicksearch-method-to-names
-  '((:title-creator-year . "title, creator, year")
-    (:fields . "fields")
-    (:everything . "everything")))
-
-(defun zotxt-choose-deferred (&optional method search-string)
+(defun zotxt--read-search-method ()
+  "Prompt user for Zotero search method to use, return a symbol."
+  (let ((method-name
+         (completing-read
+          "Zotero search method (nothing for title, creator, year): "
+          zotxt-quicksearch-method-names
+          nil t nil nil "title, creator, year")))
+    (cdr (assoc method-name zotxt-quicksearch-method-names))))
+  
+(defun zotxt-search-deferred (&optional method search-string)
   "Allow the user to select an item interactively.
 
 If METHOD is supplied, it should be one
 of :title-creator-year, :fields, or :everything.
 If SEARCH-STRING is supplied, it should be the search string."
   (if (null method)
-      (let ((method-name
-             (completing-read
-              "Zotero search method (nothing for title, creator, year): "
-              zotxt-quicksearch-method-names
-              nil t nil nil "title, creator, year")))
-        (setq method (cdr (assoc method-name zotxt-quicksearch-method-names)))))
+      (setq method (zotxt--read-search-method)))
   (if (null search-string)
       (setq search-string
             (read-string (format "Zotero quicksearch (%s) query: " (cdr (assq method zotxt-quicksearch-method-to-names))))))
+  (if (string-match-p "\\`\\s-*$" search-string)
+      (error "Please provide search string"))
   (lexical-let ((d (deferred:new)))
     (request
      (format "%s/search" zotxt-url-base)
@@ -172,6 +219,8 @@ If SEARCH-STRING is supplied, it should be the search string."
                ("method" . ,(cdr (assq method zotxt-quicksearch-method-params)))
                ("format" . "quickBib"))
      :parser #'zotxt--json-read
+     :error (function* (lambda (&rest args &key error-thrown &allow-other-keys)
+                         (deferred:errorback-post d error-thrown)))
      :success (function*
                (lambda (&key data &allow-other-keys)
                  (let* ((results (mapcar (lambda (e)
@@ -189,6 +238,21 @@ If SEARCH-STRING is supplied, it should be the search string."
                      d (if (null citation) nil
                          `((:key ,key))))))))
     d))
+
+(defun zotxt-choose-deferred (&optional arg)
+  "Allow the user to select an item interactively.
+
+ARG should be numberic prefix argugument from (interactive \"P\").
+  
+If universal argment was used, will insert the currently selected
+item from Zotero. If double universal argument is used the search
+method will have to be selected even if
+`org-zotxt-default-search-method' is non-nil."
+  (let ((use-current-selected (eq 4 arg))
+        (force-choose-search-method (eq 16 arg)))
+    (if use-current-selected
+        (zotxt-get-selected-items-deferred)
+      (zotxt-search-deferred (unless force-choose-search-method org-zotxt-default-search-method)))))
 
 (defun zotxt-select-easykey (easykey)
   "Select the item identified by EASYKEY in Zotero."
@@ -242,7 +306,7 @@ not be returned."
              (key (match-string 1))
              (completions
               (deferred:$
-                (request-deferred
+                (zotxt--request-deferred
                  (format "%s/complete" zotxt-url-base)
                  :params `(("easykey" . ,key))
                  :parser #'zotxt--json-read)
@@ -250,6 +314,7 @@ not be returned."
                   (lambda (response)
                     (mapcar (lambda (k) (format "@%s" k))
                             (request-response-data response))))
+                (deferred:error it #'zotxt--deferred-handle-error)
                 (deferred:sync! it))))
         (if (null completions)
             nil
@@ -269,6 +334,8 @@ For use only in a `deferred:$' chain."
      :parser (if (member format zotxt--json-formats)
                  #'zotxt--json-read
                #'buffer-string)
+     :error (function* (lambda (&rest args &key error-thrown &allow-other-keys)
+                         (deferred:errorback-post d error-thrown)))
      :success (function*
                (lambda (&key data &allow-other-keys)
                  (if (member format zotxt--json-formats)
@@ -278,16 +345,17 @@ For use only in a `deferred:$' chain."
                  (deferred:callback-post d item))))
     d))
 
-(defun zotxt-easykey-insert (&optional selected)
-  "Prompt for a search string and insert an easy key.
+(defun zotxt-easykey-insert (arg)
+  "Insert an easy key.
 
-If SELECTED is non-nill (interactively, With prefix argument), insert easykeys for the currently selected items in Zotero."
-  (interactive (if current-prefix-arg t))
+Prompts for search to choose item.  If prefix argument ARG is used,
+will insert the currently selected item from Zotero.  If double
+prefix argument is used the search method will have to be
+selected even if `org-zotxt-default-search-method' is non-nil"
+  (interactive "p")
   (lexical-let ((mk (point-marker)))
     (deferred:$
-      (if selected
-          (zotxt-get-selected-items-deferred)
-        (zotxt-choose-deferred))
+      (zotxt-choose-deferred arg)
       (deferred:nextc it
         (lambda (items)
           (zotxt-mapcar-deferred (lambda (item)
@@ -301,6 +369,7 @@ If SELECTED is non-nill (interactively, With prefix argument), insert easykeys f
                      (lambda (item)
                        (format "@%s" (plist-get item :easykey)))
                      items " ")))))
+      (deferred:error it #'zotxt--deferred-handle-error)
       (if zotxt--debug-sync (deferred:sync! it)))))
 
 (defun zotxt-easykey-select-item-at-point ()

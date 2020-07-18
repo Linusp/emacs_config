@@ -1,6 +1,6 @@
 ;;; org-zotxt.el --- Interface org-mode with Zotero via the zotxt extension
 
-;; Copyright (C) 2010-2016 Erik Hetzner
+;; Copyright (C) 2010-2020 Erik Hetzner
 
 ;; Author: Erik Hetzner <egh@e6h.org>
 ;; Keywords: bib
@@ -27,9 +27,9 @@
 
 (eval-when-compile
   (require 'cl))
-(require 'request-deferred)
 (require 'org-element)
 (require 'zotxt)
+(require 'deferred)
 
 (defcustom org-zotxt-link-description-style
   :citation
@@ -51,6 +51,11 @@ prefix argument (C-u C-u) to `org-zotxt-insert-reference-link'"
                  (lambda (c) (list 'const :tag (car c) (cdr c)))
                  zotxt-quicksearch-method-names)))
 
+(defcustom org-zotxt-noter-zotero-link "ZOTERO_LINK"
+  "Default property name for zotero link."
+  :group 'org-zotxt
+  :type 'string)
+
 (defun org-zotxt-extract-link-id-at-point ()
   "Extract the Zotero key of the link at point."
   (let ((ct (org-element-context)))
@@ -64,14 +69,18 @@ prefix argument (C-u C-u) to `org-zotxt-insert-reference-link'"
       (match-string 2 path)
     nil))
 
+(defun org-zotxt-make-item-link (item)
+  "Return an Org mode link for ITEM as a string."
+  (org-make-link-string (format "zotero://select/items/%s"
+                                (plist-get item :key))
+                        (if (or (eq org-zotxt-link-description-style :easykey)
+                                (eq org-zotxt-link-description-style :betterbibtexkey))
+                            (concat "@" (plist-get item org-zotxt-link-description-style))
+                          (plist-get item :citation))))
+
 (defun org-zotxt-insert-reference-link-to-item (item)
   "Insert link to Zotero ITEM in buffer."
-  (insert (org-make-link-string (format "zotero://select/items/%s"
-                                        (plist-get item :key))
-                                (if (or (eq org-zotxt-link-description-style :easykey)
-                                        (eq org-zotxt-link-description-style :betterbibtexkey))
-                                    (concat "@" (plist-get item org-zotxt-link-description-style))
-                                  (plist-get item :citation)))))
+  (insert (org-zotxt-make-item-link item)))
 
 (defun org-zotxt-insert-reference-links-to-items (items)
   "Insert links to Zotero ITEMS in buffer."
@@ -102,6 +111,7 @@ prefix argument (C-u C-u) to `org-zotxt-insert-reference-link'"
                     (delete-region (org-element-property :begin ct)
                                    (org-element-property :end ct))
                     (org-zotxt-insert-reference-link-to-item item))))))
+          (deferred:error it #'zotxt--deferred-handle-error)
           (if zotxt--debug-sync (deferred:sync! it))))))
 
 (defun org-zotxt-update-all-reference-links ()
@@ -133,12 +143,12 @@ Prompts for search to choose item.  If prefix argument ARG is used,
 will insert the currently selected item from Zotero.  If double
 prefix argument is used the search method will have to be
 selected even if `org-zotxt-default-search-method' is non-nil"
-  (interactive "P")
-  (lexical-let ((mk (point-marker)))
+  (interactive "p")
+  (lexical-let ((mk (point-marker))
+                (use-current-selected (equal '(4) arg))
+                (force-choose-search-method (equal '(16) arg)))
     (deferred:$
-      (if (equal '(4) arg)
-          (zotxt-get-selected-items-deferred)
-        (zotxt-choose-deferred (unless (equal '(16) arg) org-zotxt-default-search-method)))
+      (zotxt-choose-deferred arg)
       (deferred:nextc it
         (lambda (items)
           (if (null items)
@@ -149,9 +159,7 @@ selected even if `org-zotxt-default-search-method' is non-nil"
           (with-current-buffer (marker-buffer mk)
             (goto-char (marker-position mk))
             (org-zotxt-insert-reference-links-to-items items))))
-      (deferred:error it
-        (lambda (err)
-          (error (error-message-string err))))
+      (deferred:error it #'zotxt--deferred-handle-error)
       (if zotxt--debug-sync (deferred:sync! it)))))
 
 (defun org-zotxt--link-follow (path)
@@ -217,7 +225,7 @@ Opens with `org-open-file', see for more information about ARG."
   (lexical-let ((item-id (org-zotxt-extract-link-id-at-point))
                 (arg arg))
     (deferred:$
-      (request-deferred
+      (zotxt--request-deferred
        (format "%s/items" zotxt-url-base)
        :params `(("key" . ,item-id) ("format" . "paths"))
        :parser 'json-read)
@@ -225,6 +233,7 @@ Opens with `org-open-file', see for more information about ARG."
         (lambda (response)
           (let ((paths (cdr (assq 'paths (elt (request-response-data response) 0)))))
             (org-open-file (org-zotxt-choose-path paths) arg))))
+      (deferred:error it #'zotxt--deferred-handle-error)
       (if zotxt--debug-sync (deferred:sync! it)))))
 
 (defun org-zotxt-noter (arg)
@@ -233,28 +242,37 @@ Opens with `org-open-file', see for more information about ARG."
 If no document path propery is found, will prompt for a Zotero
 search to choose an attachment to annotate, then calls `org-noter'.
 
-If a document path property is found, simply call `org-noter'."
+If a document path property is found, simply call `org-noter'.
+
+See `org-noter' for details and ARG usage."
   (interactive "P")
-  (when (and (eq major-mode 'org-mode)
-             (boundp 'org-noter-property-doc-file)
-             (fboundp 'org-noter))
-    (when (org-before-first-heading-p)
+  (require 'org-noter nil t)
+  (unless (eq major-mode 'org-mode)
+    (error "Org mode not running"))
+  (unless (fboundp 'org-noter)
+    (error "`org-noter' not installed"))
+  (if (org-before-first-heading-p)
       (error "`org-zotxt-noter' must be issued inside a heading"))
-    (let* ((document-property (org-entry-get nil org-noter-property-doc-file (not (equal arg '(4)))))
-           (document-path (when (stringp document-property) (expand-file-name document-property))))
-      (if (and document-path (not (file-directory-p document-path)) (file-readable-p document-path))
-          (org-noter arg)
-        (lexical-let ((arg arg))
-          (deferred:$
-            (zotxt-choose-deferred)
-            (deferred:nextc it
-              (lambda (item-ids)
-                (zotxt-get-item-deferred (car item-ids) :paths)))
-            (deferred:nextc it
-              (lambda (resp)
-                (let ((path (org-zotxt-choose-path (cdr (assq 'paths (plist-get resp :paths))))))
-                  (org-entry-put nil org-noter-property-doc-file path))
-                (org-noter arg)))))))))
+  (let* ((document-property (org-entry-get nil org-noter-property-doc-file (not (equal arg '(4)))))
+         (document-path (when (stringp document-property) (expand-file-name document-property))))
+    (if (and document-path (not (file-directory-p document-path)) (file-readable-p document-path))
+        (org-noter arg)
+      (lexical-let ((arg arg))
+        (deferred:$
+          (zotxt-choose-deferred)
+          (deferred:nextc it
+            (lambda (item-ids)
+              (zotxt-get-item-deferred (car item-ids) :paths)))
+          (deferred:nextc it
+            (lambda (item)
+              (org-zotxt-get-item-link-text-deferred item)))
+          (deferred:nextc it
+            (lambda (resp)
+              (let ((path (org-zotxt-choose-path (cdr (assq 'paths (plist-get resp :paths))))))
+                (org-entry-put nil org-zotxt-noter-zotero-link (org-zotxt-make-item-link resp))
+                (org-entry-put nil org-noter-property-doc-file path))
+              (org-noter arg)))
+          (deferred:error it #'zotxt--deferred-handle-error))))))
 
 ;;;###autoload
 (define-minor-mode org-zotxt-mode
