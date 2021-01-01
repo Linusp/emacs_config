@@ -1,6 +1,8 @@
 (setq url-proxy-services
-   '(("http" . "localhost:1235")
-     ("https" . "localhost:1235")))
+      '(("no_proxy" . "^\\(localhost\\|10\\..*\\|192\\.168\\..*\\)")
+        ("http" . "localhost:1235")
+        ("https" . "localhost:1235")))
+
 
 (require 'package)
 (setq package-archives '())
