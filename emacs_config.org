@@ -1,0 +1,2563 @@
+#+TITLE: Emacs 配置
+
+* Table of Contents                                                                            :TOC:
+- [[#一些待考虑进行安装的插件][一些待考虑进行安装的插件]]
+- [[#初始化设置][初始化设置]]
+- [[#扩展安装和加载][扩展安装和加载]]
+- [[#外观设置][外观设置]]
+  - [[#字体][字体]]
+  - [[#界面][界面]]
+- [[#功能增强][功能增强]]
+- [[#编程设置][编程设置]]
+  - [[#杂项][杂项]]
+  - [[#模板和自动补全][模板和自动补全]]
+  - [[#cc][C/C++]]
+  - [[#python][Python]]
+  - [[#lisp][Lisp]]
+- [[#org-mode-设置][Org-mode 设置]]
+  - [[#基础设置][基础设置]]
+  - [[#babel-设置][babel 设置]]
+  - [[#个人管理][个人管理]]
+  - [[#写作设置][写作设置]]
+  - [[#个人知识图谱管理][个人知识图谱管理]]
+  - [[#论文管理][论文管理]]
+  - [[#org-roam-配置][org-roam 配置]]
+- [[#其他][其他]]
+  - [[#edit-serevr][Edit Serevr]]
+- [[#扩展无关的函数定义][扩展无关的函数定义]]
+  - [[#对注释和反注释的改进][对注释和反注释的改进]]
+  - [[#行区域上下移动][行/区域上下移动]]
+  - [[#显示非-ascii-字符][显示非 ASCII 字符]]
+  - [[#插入-uuid][插入 uuid]]
+  - [[#查询词典][查询词典]]
+  - [[#当如当前时间到当前光标位置][当如当前时间到当前光标位置]]
+- [[#全局快捷键设置][全局快捷键设置]]
+
+* 一些待考虑进行安装的插件
+
+  - symbol-overlay: 能高亮自己定制的关键词，感觉可以替代 hl-todo
+  - git-gutter+: 说是支持了 git-gutter 暂时还没支持的一些 feature
+  - key-chord: 似乎能把固定的按键序列映射为 emacs 函数/命令的样子，没有实际用过
+  - hydra: abo-abo 写的另外一个插件，用来简化快捷键序列
+  - pdf-tools: 懒猫写的 PDF 阅读插件
+  - ob-async: 能让 org babel 的代码异步执行的插件，用过，但还没真正用起来
+
+* 初始化设置
+
+  启动 server 模式，为后面的 edit-server 以及终端使用 emacsclient 做准备
+  #+BEGIN_SRC emacs-lisp
+  (server-start)
+  #+END_SRC
+
+  临时文件设置
+  #+BEGIN_SRC emacs-lisp
+  (setq make-backup-files nil)
+  (setq backup-inhibited t)               ;不产生备份
+  (setq auto-save-list-file-prefix nil)
+  (setq auto-save-default nil)            ;不生成 #fname# 格式的临时文件
+  #+END_SRC
+
+  剪贴板设置
+  #+BEGIN_SRC emacs-lisp
+  (setq x-select-enable-clipboard t)      ;共享剪贴板
+  (setq x-select-enable-primary t)        ;共享中键复制内容
+  (setq kill-ring-max 200)                ;killring 大小
+  #+END_SRC
+
+  滚动设置
+  #+BEGIN_SRC emacs-lisp
+  (setq scroll-conservatively 101)        ;光标移出时平滑滚动而不是重定位到中央
+  (setq mouse-wheel-scroll-amount '(1))   ;用鼠标滚动时一次只滚动一行
+  #+END_SRC
+
+  设置打开网页链接时使用的默认浏览器为 Chrome
+  #+BEGIN_SRC emacs-lisp
+  (setq browse-url-generic-program (executable-find "firefox"))
+  (setq browse-url-browser-function 'browse-url-generic)
+  #+END_SRC
+
+  其他杂项
+  #+BEGIN_SRC emacs-lisp
+  (setq default-major-mode 'text-mode)    ;将缺省模式设置为text模式
+
+  (setq visible-bell nil)                 ;关闭错误操作时的窗口闪动警告
+  (setq make-pointer-invisible t)         ;输入时隐藏鼠标指针
+
+  (setq auto-image-file-mode t)           ;让emacs可以直接打开和显示图片
+
+  (setq vc-handled-backends '(Git SVN))   ;打开版本控制
+
+  (fset 'yes-or-no-p 'y-or-n-p)           ;用 y/n 替代 yes/no
+  (global-visual-line-mode 0)
+
+  (setq calendar-week-start-day 1)        ;日历中从周一开始
+  #+END_SRC
+
+* 扩展安装和加载
+  :PROPERTIES:
+  :ID:       f43e1eaf-bc1e-4e28-a5e9-755ade50ae20
+  :END:
+
+  定义一个变量，用来保存依赖的 packge 列表
+  #+BEGIN_SRC emacs-lisp
+  (setq my-package-list '())
+  #+END_SRC
+
+  这些是和界面、外观相关的一些插件
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(nlinum nlinum) t)
+  (add-to-list 'my-package-list '(color-theme color-theme) t)
+  (add-to-list 'my-package-list '(color-theme-modern color-theme-modern) t)
+  (add-to-list 'my-package-list '(hydandata-light-theme hydandata-light-theme) t)
+  (add-to-list 'my-package-list '(color-theme-sanityinc-tomorrow color-theme-sanityinc-tomorrow) t)
+  #+END_SRC
+
+  各种 major-mode，包含一些编程语言的支持
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(graphviz-dot-mode graphviz-dot-mode) t)
+  (add-to-list 'my-package-list '(js2-mode js2-mode) t)
+  (add-to-list 'my-package-list '(markdown-mode markdown-mode) t)
+  (add-to-list 'my-package-list '(flycheck flycheck) t)
+  (add-to-list 'my-package-list '(cypher-mode cypher-mode) t)
+  (add-to-list 'my-package-list '(plantuml-mode plantuml-mode) t)
+  (setq org-plantuml-jar-path (expand-file-name "~/bin/plantuml.jar"))
+  (add-to-list 'my-package-list '(restclient restclient) t)
+  #+END_SRC
+
+  org-mode 相关
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(ob org-contrib) t)
+  (add-to-list 'my-package-list '(ob-ipython ob-ipython) t)
+  (add-to-list 'my-package-list '(ob-restclient ob-restclient) t)
+  (add-to-list 'my-package-list '(anki-editor anki-editor) t)
+  #+END_SRC
+
+  下面的则是一些效率相关的插件
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(ag ag) t)
+  (add-to-list 'my-package-list '(avy avy) t)
+  (add-to-list 'my-package-list '(expand-region expand-region) t)
+  (add-to-list 'my-package-list '(helm-utils helm) t)
+  (add-to-list 'my-package-list '(helm helm-core) t)
+  (add-to-list 'my-package-list '(magit magit) t)
+  (add-to-list 'my-package-list '(py-autopep8 py-autopep8) t)
+  (add-to-list 'my-package-list '(yafolding yafolding) t)
+  (add-to-list 'my-package-list '(openwith openwith) t)
+  (add-to-list 'my-package-list '(swiper swiper) t)
+  (add-to-list 'my-package-list '(counsel counsel) t)
+  (add-to-list 'my-package-list '(writeroom-mode writeroom-mode) t)
+  #+END_SRC
+
+  自动补全，使用 yasnippet 和 company，因为不用 auto-complete 这个包，就不用安装 jedi 了，company-jedi 会附带安装上 jedi-core，这就够了，jedi 这个包是使用 auto-complete 的。
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(yasnippet yasnippet) t)
+  (add-to-list 'my-package-list '(company company) t)
+  (add-to-list 'my-package-list '(jedi-core jedi-core) t)
+  (add-to-list 'my-package-list '(company-jedi company-jedi) t)
+  #+END_SRC
+
+  auto-virtualenvwrapper，可以根据打开的 python 文件，找到对应的 venv，然后激活这个 venv，用的是 virtualenvwrapper 这个包，所以把这个也加上
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/virtualenvwrapper.el/")
+  (require 'virtualenvwrapper)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/auto-virtualenvwrapper.el/")
+  (require 'auto-virtualenvwrapper)
+  #+END_SRC
+
+  edit-server
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'my-package-list '(edit-server edit-server) t)
+  #+END_SRC
+
+  检查插件，如果无法找到则进行安装
+  #+BEGIN_SRC emacs-lisp
+    (dolist (pkg-info my-package-list)
+      (when (not (require (nth 0 pkg-info) nil :noerror))
+        (progn
+        (message "install %s now..." (symbol-name (nth 1 pkg-info)))
+        (setq url-http-attempt-keepalives nil)
+        (package-refresh-contents)
+        (package-install (nth 1 pkg-info)))))
+  #+END_SRC
+
+  载入一些内建的功能，以及系统外插件
+  #+BEGIN_SRC emacs-lisp
+  (require 'font-lock)
+  (require 'electric)
+  (load-library "hideshow")
+
+  ; (add-to-list 'load-path "/usr/share/emacs/site-lisp/ccrypt/")
+  ; (require 'ps-ccrypt)                    ;from `apt-get install ccrypt`
+
+  ; (add-to-list 'load-path "/usr/share/emacs/site-lisp/global/")
+  ; (require 'gtags)                        ;from `apt-get install global`
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/org-brain/")
+  (require 'org-brain)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/moody/")
+  (require 'moody)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/minions/")
+  (require 'minions)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/smex/")
+  (require 'smex)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/helm-org-rifle/")
+  (require 'helm-org-rifle)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-helm-ag/")
+  (require 'helm-ag)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/helm-swoop/")
+  (require 'helm-swoop)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/highlight-parentheses.el/")
+  (require 'highlight-parentheses)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/hl-todo/")
+  (require 'hl-todo)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/pretty-symbols")
+  (require 'pretty-symbols)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-htmlize")
+  (require 'htmlize)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/git-gutter")
+  (require 'git-gutter)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/org-bullets")
+  (require 'org-bullets)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/telega.el") ;依赖 svg
+  (require 'svg)
+  ;; (require 'telega)
+  (setq telega-proxies
+        (list
+         '(:server "localhost" :port 1235 :enable t :type (:@type "proxyTypeHttp"))
+         '(:server "localhost" :port 1080 :enable t :type (:@type "proxyTypeSocks5"))
+         ))
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/toc-org")
+  (require 'toc-org)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/org-download")
+  (require 'org-download)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/literate-calc-mode.el")
+  (require 'literate-calc-mode)
+
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/org-sketch")
+  (require 'org-sketch)
+  #+END_SRC
+
+  安装 counsel-ffdata，在 Emacs 里浏览 Firefox 的书签和历史记录
+  #+BEGIN_SRC emacs-lisp
+  ; (add-to-list 'load-path "~/.emacs.d/site-lisp/counsel-ffdata")
+  ; (require 'counsel-ffdata)
+  #+END_SRC
+
+  安装 ob-cypher，支持在 org-mode 里执行 cypher 的代码
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/ob-cypher")
+  (require 'ob-cypher)
+  #+END_SRC
+
+  安装 orgba
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/orgba")
+  (require 'orgba)
+  #+END_SRC
+
+  安装 ob-mermaid
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/ob-mermaid")
+  (require 'ob-mermaid)
+  (setq ob-mermaid-cli-path "~/.nvm/versions/node/v14.15.4/bin/mmdc")
+  #+END_SRC
+
+  安装 delve，用于辅助浏览 roam 笔记
+  #+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/lister")
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/delve")
+  (require 'lister)
+  (require 'delve)
+  (require 'delve-minor-mode)
+  (require 'all-the-icons)
+  (setq delve-use-icons-in-completions t)
+  #+end_src
+
+  安装 org-transclusion
+  #+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/org-transclusion")
+  (require 'org-transclusion)
+  #+end_src
+
+  安装 beancount-mode
+  #+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/beancount-mode/")
+  (require 'beancount)
+  (add-to-list 'auto-mode-alist '("\\.bean\\'" . beancount-mode))
+  #+end_src
+
+  安装 org-roam-bibtext
+  #+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/org-roam-bibtex/")
+  (require 'org-roam-bibtex)
+  #+end_src
+
+  安装 chatgpt
+  #+begin_src emacs-lisp
+  ;; 依赖 tblui 和 spinner
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/openai")
+  (require 'openai)
+  (add-to-list 'load-path "~/.emacs.d/site-lisp/chatgpt")
+  (require 'chatgpt)
+  (setq openai-key "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")
+  #+end_src
+
+  #+RESULTS:
+  : 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
+
+* 外观设置
+
+** 字体
+
+   #+BEGIN_SRC emacs-lisp
+   (set-language-environment 'UTF-8)
+   (set-locale-environment "UTF-8")
+   ;; Emacs 23.1 set-default-font -> set-frame-font
+   (set-frame-font "Dejavu Sans Mono 12" nil t)
+   (modify-all-frames-parameters (list (cons 'font "Dejavu Sans Mono 12")))
+   (set-fontset-font "fontset-default" 'unicode "WenQuanYi Micro Hei Mono 15");
+   (setq face-font-rescale-alist '(
+                                   ("WenQuanYi Micro Hei Mono" . 1.3)
+                                   ))
+   #+END_SRC
+
+   #+RESULTS:
+   : ((WenQuanYi Micro Hei Mono . 1.3))
+
+** 界面
+
+   基本界面定制
+   #+BEGIN_SRC emacs-lisp
+   (setq initial-scratch-message "")               ;将 scratch 中的内容置空
+   (setq inhibit-startup-message t)                ;关闭启动画面
+   (setq frame-title-format "[%b]")                ;显示buffer的名字
+   (setq user-full-name "Linusp")                  ;用户名
+   (setq user-mail-address "linusp1024@gmail.com") ;用户邮箱
+
+   (tool-bar-mode 0)                       ;关闭工具栏
+   (menu-bar-mode 0)                       ;关闭菜单栏
+   (scroll-bar-mode 0)                     ;关闭滚动条
+   (blink-cursor-mode 0)                   ;关闭光标闪烁
+   (global-nlinum-mode 0)                  ;显示行号
+   (column-number-mode 0)                  ;显示列号
+   (modify-all-frames-parameters           ;使用更好看的光标
+    (list (cons 'cursor-type 'bar)))
+   (global-hl-line-mode 1)                 ;开启当前行高亮
+   ;; (set-face-attribute 'hl-line nil :background "gray5")
+   ;; (custom-set-faces '(hl-line ((t (:background "gray5")))))
+   (global-git-gutter-mode 1)              ;开启 git-gutter
+   #+END_SRC
+
+   空白符显示设置，主要是把制表符啊、多余的空格啊这种高亮一下
+   #+BEGIN_SRC emacs-lisp
+   (setq whitespace-style '(face tabs trailing tab-mark)) ;高亮制表符、结尾冗余空格
+   (setq whitespace-display-mappings
+         '((space-mark 32 [32] [183] [46])
+           (space-mark 160 [164] [95])
+           (space-mark 2208 [2212] [95])
+           (space-mark 2336 [2340] [95])
+           (space-mark 3616 [3620] [95])
+           (space-mark 3872 [3876] [95])
+           (newline-mark 10 [182 10] [36 10])
+           (tab-mark 9 [187 9] [92 9])))
+   (global-whitespace-mode t)
+   #+END_SRC
+
+   加载自定义 color-theme
+   #+BEGIN_SRC emacs-lisp
+   (add-to-list 'load-path "~/.emacs.d/themes/")
+   (require 'color-theme-tomorrow)
+   (require 'color-theme-dust)
+   (require 'color-theme-ada)
+   (require 'color-theme-smoothy)
+   (require 'color-theme-mossysparks)
+   #+END_SRC
+
+   #+RESULTS:
+   : color-theme-mossysparks
+
+   主题设置，包含 color-theme 和 mode-line 的美化
+   #+BEGIN_SRC emacs-lisp
+   ;; (load-theme 'sanityinc-tomorrow-eighties t)
+   (flucui-themes-load-style 'light)
+   #+END_SRC
+
+   #+RESULTS:
+   : t
+
+   然后默认将 Emacs 最大化
+   #+BEGIN_SRC emacs-lisp
+   (toggle-frame-maximized)
+   #+END_SRC
+
+   #+begin_src emacs-lisp
+   ;;(add-to-list `load-path "~/.emacs.d/site-lisp/awesome-tray/")
+   ;;(require 'awesome-tray)
+   ;;(awesome-tray-mode 1)
+   #+end_src
+
+   启用 moody modeline 和 minions
+   #+BEGIN_SRC emacs-lisp
+   (minions-mode 1)
+   (setq x-underline-at-descent-line t)
+   (setq moody-mode-line-height 24)
+   (moody-replace-mode-line-buffer-identification)
+   (moody-replace-vc-mode)
+   #+END_SRC
+
+* 功能增强
+  :PROPERTIES:
+  :ID:       b6118c66-36c2-426e-8902-571e63519fe1
+  :END:
+
+  #+BEGIN_SRC emacs-lisp
+  (smex-initialize)
+  (global-set-key (kbd "M-x") 'smex)
+  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+  (ido-mode t)
+  (setq windmove-wrap-around t)
+  #+END_SRC
+
+  使用 openwith 在 dired 中调用外部程序打开文件
+  #+BEGIN_SRC emacs-lisp
+  (require 'openwith)
+  (setq openwith-associations (list (list (openwith-make-extension-regexp
+                                           '("doc" "xls" "ppt" "odt" "ods" "odg" "odp"))
+                                          "libreoffice"
+                                          '(file))
+                                    ))
+  (openwith-mode 1)
+  #+END_SRC
+
+  启用 pdf-tools
+  #+begin_src emacs-lisp
+  (pdf-tools-install)
+  #+end_src
+
+  projectile 设置
+  #+begin_src emacs-lisp
+  (require 'projectile)
+  (setq projectile-project-search-path '("~/Dropbox/org/"))
+  #+end_src
+
+  writeroom-mode 设置
+  #+begin_src emacs-lisp
+  (require 'writeroom-mode)
+  (setq writeroom-width 100)
+  #+end_src
+
+* 编程设置
+
+** 杂项
+
+   #+BEGIN_SRC emacs-lisp
+   (electric-pair-mode t)                                   ;开启自动括号补全
+   (electric-indent-mode t)                                 ;开启智能缩进
+   (electric-layout-mode 0)                                 ;关闭智能自动换行
+   (global-font-lock-mode 1)                                ;开启全局语法高亮
+   (setq default-tab-width 4)
+   (setq-default indent-tabs-mode nil)
+   (add-hook 'prog-mode-hook 'hl-todo-mode)                 ;高亮 TODO 等单词
+   (add-hook 'prog-mode-hook 'pretty-symbols-mode)          ;显示 Unicode 字符
+   (dolist (command '(yank yank-pop))
+     (eval
+      `(defadvice ,command (after indent-region activate)
+         (and (not current-prefix-arg)
+              (member major-mode
+                      '(emacs-lisp-mode
+            lisp-mode
+            scheme-mode
+            python-mode
+            c-mode
+            c++-mode
+            latex-mode
+            plain-tex-mode))
+              (let ((mark-even-if-inactive
+                     transient-mark-mode))
+        (indent-region (region-beginning)
+                               (region-end) nil))))))
+   (add-hook 'after-init-hook 'global-company-mode) ;使用 company-mode 来进行补全
+   (add-to-list 'company-backends 'company-yasnippet)
+   #+END_SRC
+
+** 模板和自动补全
+
+   #+BEGIN_SRC emacs-lisp
+   (yas-global-mode 1)
+   (yas-minor-mode-on)
+   (define-key yas-minor-mode-map [(tab)] nil)
+   (define-key yas-minor-mode-map (kbd "TAB") nil)
+   (define-key yas-minor-mode-map (kbd "C-;") 'yas-expand)
+   #+END_SRC
+
+   company 的设置
+   #+BEGIN_SRC emacs-lisp
+   (setq compandy-minimum-prefix-length 1)
+   (setq company-tooltip-align-annotations t)
+   (setq company-transformers '(company-sort-by-occurrence))
+   (setq company-selection-wrap-around t)
+   (setq company-tooltip-limit 10)
+   (define-key company-active-map (kbd "M-n") nil)
+   (define-key company-active-map (kbd "M-p") nil)
+   (define-key company-active-map (kbd "C-n") 'company-select-next)
+   (define-key company-active-map (kbd "C-p") 'company-select-previous)
+   (define-key company-active-map (kbd "TAB") 'company-complete-common-or-cycle)
+   (define-key company-active-map (kbd "<tab>") 'company-complete-common-or-cycle)
+   (define-key company-active-map (kbd "S-TAB") 'company-select-previous)
+   (define-key company-active-map (kbd "<backtab>") 'company-select-previous)
+   #+END_SRC
+
+** C/C++
+
+   #+BEGIN_SRC emacs-lisp
+   (c-add-style "linusp"
+                '((c-basic-offset . 4)
+                  (c-comment-only-line-offset . 0)
+                  (c-hanging-braces-alist
+                   (brace-list-open)
+                   (brace-entry-open)
+                   (substatement-open after)
+                   (block-close . c-snug-do-while)
+                   (arglist-cont-nonempty))
+                  (c-cleanup-list brace-else-brace)
+                  (c-offsets-alist
+                   (case-label . +)
+                   (statement-block-intro . +)
+                   (knr-argdecl-intro . 0)
+                   (substatement-open . 0)
+                   (substatement-label . 0)
+                   (label . 0)
+                   (statement-cont . +))))
+   (defun gtags-root-dir ()
+    "Returns GTAGS root directory or nil if doesn't exist."
+    (with-temp-buffer
+      (if (zerop (call-process "global" nil t nil "-pr"))
+          (buffer-substring (point-min) (1- (point-max)))
+        nil)))
+   (setq c-default-style "linusp")
+   (defun my-cc-mode-config ()
+     (setq c-toggle-auto-state t
+           c-basic-offset      4          ;缩进宽度为4
+           default-tab-width   4          ;制表符宽度为4
+           indent-tabs-mode    nil        ;不使用tab键缩进
+           )
+     (linum-mode t)
+     (hs-minor-mode t)
+     (whitespace-mode t)
+     ;; (gtags-mode t)
+     ;; (hl-line-mode t)
+     ;; (hidden-minor-mode)
+     (highlight-parentheses-mode t))
+   (add-hook 'c-mode-hook 'my-cc-mode-config)
+   (add-hook 'c++-mode-hook 'my-cc-mode-config)
+   #+END_SRC
+
+** Python
+
+   jedi 的安装，首先参照 [[https://archive.zhimingwang.org/blog/2015-04-26-using-python-3-with-emacs-jedi.html][这篇文章]] 设置 python3 的 jedi
+   #+BEGIN_SRC shell
+   mkdir -p ~/.emacs.d/.python-environments
+   virtualenv -p /usr/bin/python3  --prompt="<venv:jedi>" jedi
+   pip install --upgrade ~/.emacs.d/elpa/jedi-core-20170319.2107/
+   #+END_SRC
+
+   然后设置 jedi，需要注意的是，这里的 "jedi:server-command" 需要设置一下
+   #+BEGIN_SRC emacs-lisp
+   (add-hook 'python-mode-hook 'jedi:setup)
+   (setq jedi:complete-on-dot t)
+   (setq jedi:environment-root "jedi")
+   (setq jedi:server-command (jedi:-env-server-command))
+   (setq jedi:use-shortcuts t)             ;能使用 import tensorflow as tf 后的 tf 来补全
+   (message "jedi:server-command is %S" jedi:server-command)
+   #+END_SRC
+
+   另外，遵照 [[https://github.com/tkf/emacs-jedi][emacs-jedi]] 项目里的说明，因为我使用 company-mode，就不需要安装 jedi，只需要安装 company-jedi 就好了， company-jedi 里会安装 jedi-core，这就够了。
+
+   flycheck 的相关设置
+   #+BEGIN_SRC emacs-lisp
+   (require 'auto-virtualenvwrapper)
+   (add-hook 'python-mode-hook #'auto-virtualenvwrapper-activate)
+   (add-hook 'window-configuration-change-hook #'auto-virtualenvwrapper-activate)
+   (add-hook 'focus-in-hook #'auto-virtualenvwrapper-activate)
+   (setq auto-virtualenvwrapper-verbose nil)
+
+   ;; 设置让 flycheck 使用 virtualenv 中的 pylint
+   (declare-function python-shell-calculate-exec-path "python")
+
+   (defun flycheck-virtualenv-executable-find (executable)
+     "Find an EXECUTABLE in the current virtualenv if any."
+     (if (bound-and-true-p python-shell-virtualenv-root)
+         (let ((exec-path (python-shell-calculate-exec-path)))
+           (executable-find executable))
+       (executable-find executable)))
+
+   (defun flycheck-virtualenv-setup ()
+     "Setup Flycheck for the current virtualenv."
+     (setq-local flycheck-executable-find #'flycheck-virtualenv-executable-find))
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+   (defun my-python-mode-config ()
+     (setq python-indent-offset 4
+           python-indent 4
+           indent-tabs-mode nil
+           default-tab-width 4)
+     (setenv "IPY_TEST_SIMPLE_PROMPT" "1") ;fixed emacs 25.1 bug
+     (hs-minor-mode t)
+     (auto-fill-mode 0)
+     (whitespace-mode t)
+     (hl-line-mode t)
+     (pretty-symbols-mode t)
+     (flycheck-mode t)
+     (add-to-list 'company-backends 'company-jedi)
+     (set (make-local-variable 'electric-indent-mode) nil))
+   (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
+   (add-to-list 'auto-mode-alist '("SConstruct" . python-mode))
+   (setq python-shell-interpreter "ipython"
+         python-shell-interpreter-args ""
+         python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+         python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+         python-shell-completion-setup-code "from IPython.core.completerlib import module_completion"
+         python-shell-completion-module-string-code "';'.join(module_completion('''%s'''))\n"
+         python-shell-completion-string-code "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
+   (add-hook 'python-mode-hook 'my-python-mode-config)
+   #+END_SRC
+
+   设置 pep8
+   #+BEGIN_SRC emacs-lisp
+   (add-hook 'python-mode-hook 'py-autopep8--enable)
+   (setq py-autopep8-options '("--max-line-length=100"))
+   #+END_SRC
+
+** Lisp
+
+   #+BEGIN_SRC emacs-lisp
+   (defun lisp-mode-config ()
+     (highlight-parentheses-mode t)
+     (hs-minor-mode t)
+     (hl-line-mode t)
+     (whitespace-mode t)
+     (pretty-symbols-mode t)
+     (set (make-local-variable 'electric-pair-mode) nil)
+     )
+   ;; My slime
+   ;; (defun my-slime ()
+   ;;   (interactive)
+   ;;   (slime)
+   ;;   (delete-other-windows))
+   ;; CL
+   (setq slime-lisp-implementations '((sbcl ("sbcl"))))
+   (setq inferior-lisp-program "sbcl")
+   ;; (slime-setup '(slime-fancy))
+   (add-hook 'emacs-lisp-mode-hook 'lisp-mode-config)  ;Emacs Lisp
+   (add-hook 'lisp-mode-hook       'lisp-mode-config)  ;Common Lisp
+   ;; (add-hook 'slime-repl-mode      'lisp-mode-config)  ;Slime REPL
+   (add-hook 'inferior-octave-mode-hook
+             (lambda ()
+               (turn-on-font-lock)
+               (define-key inferior-octave-mode-map [up]
+                 'comint-previous-input)
+               (define-key inferior-octave-mode-map [down]
+                 'comint-next-input)))
+   #+END_SRC
+
+* Org-mode 设置
+
+** 基础设置
+
+   参考: [[https://emacsnotes.wordpress.com/2020/04/26/create-tables-with-paragraph-like-content-in-org-mode-with-the-least-amount-of-hassle/][Create tables with paragraph-like content in Org mode, with the least amount of hassle]]
+
+   要求
+   - JabrefExportChicagoODF 1.2.2      ... Jabref Plugin for export to Chicago Manual of Style in OpenDocumentFormat
+   - ox-odt                 9.2.6.263  ... OpenDocument Text Exporter for Org Mode
+
+   我配置里的 ox-dt 还是 org-plus-contrib 2018 里的，版本有些老旧，运行不起来，所以下面的配置暂时不启用
+   #+BEGIN_SRC emacs-lisp-disable
+   (with-eval-after-load 'ox-html
+
+     (add-to-list
+      'org-export-filter-parse-tree-functions
+      (defun org-html--translate-list-tables (tree backend info)
+        (if (eq backend 'html)
+            (org-odt--translate-list-tables tree backend info)
+          tree))))
+   #+END_SRC
+
+   org-mode 的基本设置
+   #+BEGIN_SRC emacs-lisp
+   (add-to-list 'auto-mode-alist '("\\.txt\\'" . org-mode))
+   (defun my-org-mode-config ()
+     (setq org-edit-src-content-indentation 0
+           org-src-tab-acts-natively t
+           org-src-fontify-natively t
+           org-confirm-babel-evaluate nil
+           org-startup-with-inline-images t
+           truncate-lines nil
+           org-export-with-sub-superscripts '{}
+           org-hide-emphasis-markers t
+           org-image-actual-width nil
+           org-completion-use-ido t
+           org-html-checkbox-type 'html
+           ;; 设置 org-preview-latex-fragment 时生成的预览图片所在的目录
+           org-preview-latex-image-directory "~/Pictures/ltximg/"
+           org-id-link-to-org-use-id t
+           org-footnote-auto-adjust t
+           org-adapt-indentation t         ;使用 hard indentation，见 https://orgmode.org/manual/Hard-indentation.html
+           )
+     (setq-default org-download-image-dir "~/Dropbox/org/images")
+     (setq-default org-download-heading-lvl nil)
+     (setq-default org-download-timestamp "_%Y%m%d_%H%M%s")
+     (setq-default org-download-image-org-width 800)
+     (org-bullets-mode 1)
+     (toc-org-mode 1)
+     (helm-mode 1)
+     )
+   (add-hook 'org-mode-hook 'my-org-mode-config)
+   (add-hook 'dired-mode-hook 'org-download-enable)
+   (add-hook 'org-mode-hook #'delve-minor-mode-maybe-activate)
+   (font-lock-add-keywords 'org-mode
+                           '(("^ +\\([-*]\\) "
+                              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+
+   ;; 插入/修改图片后马上显示
+   (defun shk-fix-inline-images ()
+        (when org-inline-image-overlays
+          (org-redisplay-inline-images)))
+   (add-hook 'org-babel-after-execute-hook 'shk-fix-inline-images)
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+   ;; from https://emacs-china.org/t/org-download/2422/5
+   (defun custom-org-download-method (link)
+     (org-download--fullname (org-link-unescape link)))
+   (setq org-download-method 'custom-org-download-method) ; 注意：这里不能用lambda表达式
+
+   ;; 顺便改下annotate，就是自动插入的那行注释，里面写的是图片来源路径
+   (setq org-download-annotate-function
+         '(lambda (link)
+            (org-download-annotate-default (org-link-unescape link))))
+   #+END_SRC
+
+   设置默认的 org 文件
+   #+BEGIN_SRC emacs-lisp
+   (setq org-directory "~/Dropbox/org")
+   (setq org-default-notes-file (concat org-directory "/inbox.org"))
+   #+END_SRC
+
+   隐藏 PROPERTIES drawer
+   #+begin_src emacs-lisp
+   ;; (defun org-cycle-hide-drawers (state)
+   ;;   "Re-hide all drawers after a visibility state change."
+   ;;   (when (and (derived-mode-p 'org-mode)
+   ;;              (not (memq state '(overview folded contents))))
+   ;;     (save-excursion
+   ;;       (let* ((globalp (memq state '(contents all)))
+   ;;              (beg (if globalp
+   ;;                       (point-min)
+   ;;                     (point)))
+   ;;              (end (if globalp
+   ;;                       (point-max)
+   ;;                     (if (eq state 'children)
+   ;;                         (save-excursion
+   ;;                           (outline-next-heading)
+   ;;                           (point))
+   ;;                       (org-end-of-subtree t)))))
+   ;;         (goto-char beg)
+   ;;         (while (re-search-forward org-drawer-regexp end t)
+   ;;           (save-excursion
+   ;;             (beginning-of-line 1)
+   ;;             (when (looking-at org-drawer-regexp)
+   ;;               (let* ((start (1- (match-beginning 0)))
+   ;;                      (limit
+   ;;                       (save-excursion
+   ;;                         (outline-next-heading)
+   ;;                         (point)))
+   ;;                      (msg (format
+   ;;                            (concat
+   ;;                             "org-cycle-hide-drawers:  "
+   ;;                             "`:END:`"
+   ;;                             " line missing at position %s")
+   ;;                            (1+ start))))
+   ;;                 (if (re-search-forward "^[ \t]*:END:" limit t)
+   ;;                     (outline-flag-region start (point-at-eol) t)
+   ;;                   (user-error msg))))))))))
+   #+end_src
+
+** babel 设置
+
+   更好地显示 babel 的 source block，来自: [[https://pank.eu/blog/pretty-babel-src-blocks.html][pretty org babel blocks]]
+   #+BEGIN_SRC emacs-lisp
+   (with-eval-after-load 'org
+     (defvar-local rasmus/org-at-src-begin -1
+       "Variable that holds whether last position was a ")
+
+     (defvar rasmus/ob-header-symbol ?☰
+       "Symbol used for babel headers")
+
+     (defun rasmus/org-prettify-src--update ()
+       (let ((case-fold-search t)
+             (re "^[ \t]*#\\+begin_src[ \t]+[^ \f\t\n\r\v]+[ \t]*")
+             found)
+         (save-excursion
+           (goto-char (point-min))
+           (while (re-search-forward re nil t)
+             (goto-char (match-end 0))
+             (let ((args (org-trim
+                          (buffer-substring-no-properties (point)
+                                                          (line-end-position)))))
+               (when (org-string-nw-p args)
+                 (let ((new-cell (cons args rasmus/ob-header-symbol)))
+                   (cl-pushnew new-cell prettify-symbols-alist :test #'equal)
+                   (cl-pushnew new-cell found :test #'equal)))))
+           (setq prettify-symbols-alist
+                 (cl-set-difference prettify-symbols-alist
+                                    (cl-set-difference
+                                     (cl-remove-if-not
+                                      (lambda (elm)
+                                        (eq (cdr elm) rasmus/ob-header-symbol))
+                                      prettify-symbols-alist)
+                                     found :test #'equal)))
+           ;; Clean up old font-lock-keywords.
+           (font-lock-remove-keywords nil prettify-symbols--keywords)
+           (setq prettify-symbols--keywords (prettify-symbols--make-keywords))
+           (font-lock-add-keywords nil prettify-symbols--keywords)
+           (while (re-search-forward re nil t)
+             (font-lock-flush (line-beginning-position) (line-end-position))))))
+
+     (defun rasmus/org-prettify-src ()
+       "Hide src options via `prettify-symbols-mode'.
+
+     `prettify-symbols-mode' is used because it has uncollpasing. It's
+     may not be efficient."
+       (let* ((case-fold-search t)
+              (at-src-block (save-excursion
+                              (beginning-of-line)
+                              (looking-at "^[ \t]*#\\+begin_src[ \t]+[^ \f\t\n\r\v]+[ \t]*"))))
+         ;; Test if we moved out of a block.
+         (when (or (and rasmus/org-at-src-begin
+                        (not at-src-block))
+                   ;; File was just opened.
+                   (eq rasmus/org-at-src-begin -1))
+           (rasmus/org-prettify-src--update))
+         (setq rasmus/org-at-src-begin at-src-block)))
+
+     (defun rasmus/org-prettify-symbols ()
+       (mapc (apply-partially 'add-to-list 'prettify-symbols-alist)
+             (cl-reduce 'append
+                        (mapcar (lambda (x) (list x (cons (upcase (car x)) (cdr x))))
+                                `(("#+begin_src" . ?✎) ;; ✎
+                                  ("#+end_src"   . ?□) ;; ⏹
+                                  ("#+header:" . ,rasmus/ob-header-symbol)
+                                  ("#+begin_quote" . ?»)
+                                  ("#+end_quote" . ?«)))))
+       (turn-on-prettify-symbols-mode)
+       (add-hook 'post-command-hook 'rasmus/org-prettify-src t t))
+     (add-hook 'org-mode-hook #'rasmus/org-prettify-symbols))
+   #+END_SRC
+
+   org-babel 的语言设置
+   #+BEGIN_SRC emacs-lisp
+   (require 'ob-python)
+   (org-babel-do-load-languages
+    'org-babel-load-languages '((dot . t)
+                                (ditaa . t)
+                                (lisp . t)
+                                (octave . t)
+                                (gnuplot . t)
+                                (python . t)
+                                (C . t)
+                                (shell . t)
+                                (java . t)
+                                (latex . t)
+                                (clojure . t)
+                                (ruby . t)
+                                (plantuml . t)
+                                (cypher . t)
+                                (sql . t)
+                                (emacs-lisp . t))
+    )
+   #+end_src
+
+** 个人管理
+   :PROPERTIES:
+   :ID:       845afd72-8703-486f-93da-883c2e9b9be3
+   :END:
+
+   设置 =org-capture-bookmark= 为 nil，不要在 bookmarks 里记一个 last stored capture 的特殊书签
+   #+begin_src emacs-lisp
+   (setq org-capture-bookmark nil)
+   #+END_SRC
+
+   设置基础的任务状态关键词，其中 "DONE" 和 "ABORT" 表示终结状态，并且用 "@" 设置为在进入终结状态时，要求输入笔记；用 "!" 设置从终结状态变化为其他状态时自动添加变更信息。
+   #+BEGIN_SRC emacs-lisp
+   (setq org-use-fast-todo-selection t)
+   (setq org-todo-keywords '((sequence "TODO(t)" "NEXT(n)" "SOMETIME(s)" "|" "DONE(d@/!)" "ABORT(a@/!)")))
+   (setq org-log-done t)
+   (setq org-log-into-drawer t)
+   (setq org-log-state-notes-insert-after-drawers t)
+   #+END_SRC
+
+   任务关键词还可以在具体的文件中用 =#+SEQ_TODO: TODO NEXT | DONE= 这样的方式单独设置。
+
+   此外要求子任务未完成时不能将父任务标记为完成
+   #+BEGIN_SRC emacs-lisp
+   (setq org-enforce-todo-dependencies t)
+   (setq org-enforce-todo-checkbox-dependencies t)
+   #+END_SRC
+
+   然后是 org-capture 的模板，我的模板暂时分为以下几个:
+   + Inbox: 用来收集基础的未归类的内容
+
+     #+BEGIN_SRC emacs-lisp
+     (setq org-capture-templates nil)
+     (add-to-list 'org-capture-templates
+                  '("i" "Inbox"
+                    entry (file "~/Dropbox/org/inbox.org")
+                    "* %U - %^{title} %^g\n\n  %?"
+                    :empty-lines 1))
+     #+END_SRC
+
+   + Task: 用来记录任务
+
+     嗯没错，时隔多年，我又要启用 task 系统了！
+
+     任务统一加到 Inbox 里，然后手工再做分类
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates '("t" "Tasks"))
+     (add-to-list 'org-capture-templates `("ti" "General Task" entry (file "~/Dropbox/org/tasks/inbox.org")
+                                           ,(concat "* TODO %^{title}\n"
+                                                   "  :PROPERTIES:\n"
+                                                   "  :CREATED:   %U\n"
+                                                   "  :END:\n\n"
+                                                   "  %?")
+                                           :empty-lines 1))
+     (add-to-list 'org-capture-templates `("tw" "Work Tasks" entry (file "~/Dropbox/org/tasks/work.org")
+                                           ,(concat "* TODO %^{title}\n"
+                                                   "  :PROPERTIES:\n"
+                                                   "  :CREATED:   %U\n"
+                                                   "  :END:\n\n"
+                                                   "  %?")
+                                           :empty-lines 1))
+     (add-to-list 'org-capture-templates `("tp" "Personal Tasks" entry (file "~/Dropbox/org/tasks/personal.org")
+                                           ,(concat "* TODO %^{title}\n"
+                                                    "  :PROPERTIES:\n"
+                                                    "  :CREATED:   %U\n"
+                                                    "  :END:\n\n"
+                                                    "  %?"
+                                                    )
+                                           :empty-lines 1))
+     #+END_SRC
+
+   + Web: 用来收集 web 内容
+
+     用的是 org-protocol
+     #+BEGIN_SRC emacs-lisp
+     (require 'org-protocol)
+     #+END_SRC
+
+     添加一个组模板吧
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates '("w" "Web"))
+     #+END_SRC
+
+     定义一个函数，用来将选中内容插入到同一个 headline 中
+     #+BEGIN_SRC emacs-lisp
+     (defun org-capture-template-goto-link ()
+       (org-capture-put :target (list 'file+headline
+                                      (nth 1 (org-capture-get :target))
+                                      (org-capture-get :annotation)))
+       (org-capture-put-target-region-and-position)
+       (widen)
+       (let ((heading (nth 2 (org-capture-get :target))))
+         (goto-char (point-min))
+         (if (re-search-forward
+              (format org-complex-heading-regexp-format (regexp-quote heading)) nil t)
+             (org-end-of-subtree)
+           (goto-char (point-max))
+           (or (bolp) (insert "\n"))
+           (insert "* " heading "\n"))))
+     #+END_SRC
+
+     和 org-protocol 结合来做收集
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates
+                  '("wa" "Web Annotation" plain
+                    (file+function "~/Dropbox/org/inbox.org" org-capture-template-goto-link)
+                    "  %U %:initial" :empty-lines 1 :immediate-finish t))
+     #+END_SRC
+
+     利用 [[https://github.com/alphapapa/org-protocol-capture-html][org-protocol-capture-html]] 来做稍后阅读
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'load-path "~/.emacs.d/site-lisp/org-protocol-capture-html")
+     (require 'org-protocol-capture-html)
+     #+END_SRC
+
+     #+BEGIN_SRC emacs-lisp
+     (defun web-file-to-save ()
+       (concat "~/Dropbox/org/web" (org-capture-get :description) ".org"))
+
+     (add-to-list 'org-capture-templates
+                  '("wr" "Web Reading" plain
+                    (function web-file-to-save)
+                    "LINK: %:link\n\n%:initial" :immediate-finish t))
+     #+END_SRC
+
+     #+RESULTS:
+     | wr | Web Reading | plain | (function web-file-to-save) | LINK: %:link |
+
+
+
+     <2018-04-02 一 07:46> 嗯，似乎还没有完成，会让我选文件来着……
+
+   + Notes: 分类明确的笔记内容
+
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates
+                  '("n" "Notes"
+                    entry (file "~/Dropbox/org/notes/inbox.org")
+                    "* %^{heading} %t %^g\n  %?\n"
+                    :empty-lines 1
+                    ))
+     #+END_SRC
+
+     #+RESULTS:
+     | n | Notes | entry | (file ~/Dropbox/org/notes/inbox.org) | * %^{heading} %t %^g |
+
+   + Journal: 日志
+
+     用来记录自己每天做的事情的具体过程，一般是工作日志
+     #+BEGIN_SRC emacs-lisp
+     (add-to-list 'org-capture-templates
+                  '("j" "Journal"
+                    entry (file+olp+datetree "~/Dropbox/org/journal/inbox.org")
+                    "* %U - %^{heading} %^g\n  %?\n"
+                    :empty-lines 1
+                    ))
+     #+END_SRC
+
+   + Diary: 日记
+
+     记录每天发生的、了解到的事情
+     #+BEGIN_SRC emacs-lisp
+     (defun find-today ()
+       (let* ((heading (format-time-string "%Y-%m-%d 周%a"))
+              end)
+         (unless (derived-mode-p 'org-mode)
+           (error "Target buffer \"%s\" should be in Org mode" (current-buffer)))
+         (goto-char (point-min))             ;移动到 buffer 的开始位置
+         (let ((re (format org-complex-heading-regexp-format
+                             (regexp-quote heading)))
+               (cnt 0))
+           (if (re-search-forward re end t)
+               (goto-char (point-at-bol))  ;如果找到了 headline 就移动到对应的位置
+             (progn                        ;否则就新建一个 headline
+               (goto-char (point-max))
+               (or (bolp) (insert "\n"))
+               (if (/= (point) (point-min)) (org-end-of-subtree t t))
+               (insert "* " heading "\n"))))
+         (org-end-of-subtree)))
+
+     (add-to-list 'org-capture-templates `("d" "Diary"))
+     (add-to-list 'org-capture-templates
+                  `("dg" "General"
+                    plain (file+function "~/Dropbox/org/diary.org" find-today)
+                    "** %<%H:%M> %?"
+                    :empty-lines 1))
+     (add-to-list 'org-capture-templates
+                  `("de" "Emotion"
+                    plain (file+function "~/Dropbox/org/diary.org" find-today)
+                    ,(concat "** %<%H:%M> 情绪|%^{情绪|快乐|愤怒|恐惧|悲伤}\n\n"
+                             "   %?")
+                    :empty-lines 1))
+     (add-to-list 'org-capture-templates
+                  `("dt" "Thought"
+                    plain (file+function "~/Dropbox/org/diary.org" find-today)
+                    ,(concat "** %<%H:%M> 想法|%?\n\n")
+                    :empty-lines 1))
+     (add-to-list 'org-capture-templates
+                  `("dp" "Plan"
+                    plain (file+function "~/Dropbox/org/diary.org" find-today)
+                    "** %<%H:%M> 今日计划\n\n   %?"
+                    :empty-lines 1))
+     (add-to-list 'org-capture-templates
+                  `("dr" "Review"
+                    plain (file+function "~/Dropbox/org/diary.org" find-today)
+                    ,(concat "** %<%H:%M> 今日回顾\n\n"
+                             "   - 事项回顾\n\n"
+                             "     #+BEGIN: clocktable :scope agenda-with-archives :block today :maxlevel 4 :fileskip0 t\n"
+                             "     #+END\n\n"
+                             "     %?\n\n"
+                             "   - 今日反思\n"
+                             "   - 今日收获\n")
+                    :empty-lines 1))
+     (add-to-list 'org-capture-templates
+                  `("dd" "Deal"
+                    plain (file+function "~/Dropbox/org/diary.org" find-today)
+                    ,(concat "** %<%H:%M> 交易记录: %^{操作|买入|卖出}%^{买卖品种}%^{买卖数量}份\n\n"
+                             "   - 操作: %\\1\n"
+                             "   - 品种: %\\2\n"
+                             "   - 数量: %\\3\n"
+                             "   - 买卖理由:\n\n"
+                             "     %?\n\n")
+                    :empty-lines 1))
+     #+END_SRC
+
+   + 每周回顾和下周计划
+
+     TODO
+
+   在上述模板中有时候需要填 tag，我把 tag 的举例设置得大一些，这样当标题比较长的时候不会影响阅读
+   #+BEGIN_SRC emacs-lisp
+   (setq org-tags-column -100)
+   ; (add-hook 'org-capture-mode-hook #'org-align-all-tags)
+   #+END_SRC
+
+   Org Brain 设置
+   #+BEGIN_SRC emacs-lisp
+   (setq org-brain-path "~/Dropbox/org/brain")
+   (setq org-id-track-globally t)
+   (setq org-id-locations-file "~/Dropbox/org/.org-id-locations")
+   #+END_SRC
+
+   然后是 agenda 相关的设置
+
+   首先是一些初始化设置
+   #+BEGIN_SRC emacs-lisp
+   (require 'org-clock)
+   (setq org-agenda-span 'day
+         org-agenda-files '("~/Dropbox/org/tasks/")
+         ;; org-deadline-warning-days 0
+         ;; org-agenda-todo-ignore-deadlines 'far
+         org-agenda-todo-ignore-scheduled 'future
+         ;; org-agenda-inhibit-startup t
+         ;; org-agenda-skip-scheduled-if-done t
+         ;; org-agenda-skip-deadline-if-done t
+         ;; org-habit-graph-column 80
+         org-agenda-block-separator " "
+         ;; org-agenda-log-mode-items '(clock)
+         ;; org-agenda-log-mode-add-notes nil
+         )
+
+   ;; 把 agenda-view 里的按键 k 改成执行 org-capture 而不是 org-agenda-capture
+   (add-hook 'org-agenda-mode-hook
+             (lambda () (local-set-key (kbd "k") 'org-capture)))
+   #+end_src
+
+   然后定义一些函数用于自定义 agenda 视图
+   #+begin_src emacs-lisp
+   (defun z/get-weekday ()
+     (let* ((today (calendar-current-date))
+            (weekday (org-day-of-week (nth 1 today) (nth 0 today) (nth 2 today))))
+       (if (> weekday 0) weekday 7)))
+
+   (defun z/begin-date-of-current-week ()
+     (let* ((weekday (z/get-weekday))
+            (offset (- 1 weekday)))
+       (org-read-date nil nil (format "+%dd" offset))))
+
+   (defun z/end-date-of-current-week ()
+     (let* ((weekday (z/get-weekday))
+            (offset (- 7 weekday)))
+       (org-read-date nil nil (format "+%dd" offset))))
+
+   (defun z/get-day (property)
+     (let ((val (org-entry-get nil property)))
+       (if val (time-to-days (org-time-string-to-time val)) nil)))
+
+
+   ;; (defun z/get-subtasks-num ()
+   ;;   (save-excursion
+   ;;     (save-restriction
+   ;;       (progn
+   ;;         (org-back-to-heading)
+   ;;         ;; (org-narrow-to-subtree)
+   ;;         (org-show-children)
+   ;;         (let* ((level (org-current-level))
+   ;;                (subheading-level (+ 1 level))
+   ;;                (todo-keywords '("TODO" "NEXT" "DONE" "ABORT"))
+   ;;                res)
+   ;;           (while (and (progn
+   ;;                         (outline-next-heading)
+   ;;                         (> (org-current-level) level)))
+   ;;             (let* ((element (org-heading-components))
+   ;;                    (cur-level (org-current-level))
+   ;;                    (tags (org-get-tags))
+   ;;                    (todo-keyword (nth 2 element)))
+   ;;               (when (and (= cur-level subheading-level)
+   ;;                          (not (member "ARCHIVE" tags))
+   ;;                          (member (substring-no-properties todo-keyword) todo-keywords))
+   ;;                 (add-to-list 'res element))))
+   ;;           (length res))))))
+
+   (defun z/get-subtasks-num ()
+     (save-excursion
+       (save-restriction
+         (progn
+           (org-back-to-heading)
+           (org-narrow-to-subtree)
+           (org-show-children)
+           (let* ((level (org-current-level))
+                  (subheading-level (+ 1 level))
+                  (todo-keywords '("TODO" "NEXT" "DONE" "ABORT")))
+             (length (delq nil
+                           (org-map-entries
+                            (lambda ()
+                              (let ((todo-keyword (org-get-todo-state)))
+                                (when (and (= (org-current-level) subheading-level)
+                                           todo-keyword
+                                           (member (substring-no-properties todo-keyword) todo-keywords))
+                                  (org-heading-components))))
+                            nil
+                            'tree))))))))
+
+   (defun z/get-ancestor-tasks-num ()
+     (save-excursion
+       (save-restriction
+         (let* ((level (org-current-level))
+                (cur-level level)
+                (todo-keywords '("TODO" "NEXT" "DONE" "ABORT"))
+                (ancestors '()))
+           (while (> cur-level 1)
+             (outline-up-heading 1)
+             (let ((todo-keyword (org-get-todo-state)))
+               (when (and todo-keyword (member (substring-no-properties todo-keyword) todo-keywords))
+                 (push (org-heading-components) ancestors)))
+             (setq cur-level (org-current-level)))
+           (length ancestors)))))
+
+   (defun z/org-agenda-select (&rest args)
+     (let* ((no-subtasks (plist-get args :no-subtasks))
+            (no-ancestors (plist-get args :no-ancestors))
+            (todo-keywords (plist-get args :todo-keywords))
+            (begin-scheduled (plist-get args :begin-scheduled))
+            (end-scheduled (plist-get args :end-scheduled))
+            (begin-deadline (plist-get args :begin-deadline))
+            (end-deadline (plist-get args :end-deadline))
+            (begin-scheduled-or-deadline (plist-get args :begin-scheduled-or-deadline))
+            (end-scheduled-or-deadline (plist-get args :end-scheduled-or-deadline))
+            (begin-scheduled-date (cond ((null begin-scheduled) nil)
+                                        ((string= begin-scheduled "ws") (z/begin-date-of-current-week))
+                                        ((string= begin-scheduled "we") (z/end-date-of-current-week))
+                                        (t (org-read-date nil nil begin-scheduled))))
+            (end-scheduled-date (cond ((null end-scheduled) nil)
+                                      ((string= end-scheduled "ws") (z/begin-date-of-current-week))
+                                      ((string= end-scheduled "we") (z/end-date-of-current-week))
+                                      (t (org-read-date nil nil end-scheduled))))
+            (begin-deadline-date (cond ((null begin-deadline) nil)
+                                       ((string= begin-deadline "ws") (z/begin-date-of-current-week))
+                                       ((string= begin-deadline "we") (z/end-date-of-current-week))
+                                       (t (org-read-date nil nil begin-deadline))))
+            (end-deadline-date (cond ((null end-deadline) nil)
+                                     ((string= end-deadline "ws") (z/begin-date-of-current-week))
+                                     ((string= end-deadline "we") (z/end-date-of-current-week))
+                                     (t (org-read-date nil nil end-deadline))))
+            (begin-s-or-d (cond ((null begin-scheduled-or-deadline) nil)
+                                ((string= begin-scheduled-or-deadline "ws") (z/begin-date-of-current-week))
+                                ((string= begin-scheduled-or-deadline "we") (z/end-date-of-current-week))
+                                (t (org-read-date nil nil begin-scheduled-or-deadline))))
+            (end-s-or-d (cond ((null end-scheduled-or-deadline) nil)
+                              ((string= end-scheduled-or-deadline "ws") (z/begin-date-of-current-week))
+                              ((string= end-scheduled-or-deadline "we") (z/end-date-of-current-week))
+                              (t (org-read-date nil nil end-scheduled-or-deadline))))
+            (next-headline (save-excursion (or (outline-next-heading) (point-max))))
+            (subtree-end (save-excursion (org-end-of-subtree t)))
+            (todo-keyword (org-get-todo-state))
+            (scheduled-day (z/get-day "SCHEDULED"))
+            (deadline-day (z/get-day "DEADLINE"))
+            (subtasks-num (z/get-subtasks-num))
+            (ancestors-num (z/get-ancestor-tasks-num))
+            (subtree-valid
+             (and (or (not no-subtasks) (= subtasks-num 0))
+                  (or (not no-ancestors) (= ancestors-num 0))
+                  (or (not todo-keywords) (and todo-keyword
+                                               (member (substring-no-properties todo-keyword) todo-keywords)))
+                  (or (not begin-scheduled-date)
+                      (and scheduled-day
+                           (>= scheduled-day (org-time-string-to-absolute begin-scheduled-date))))
+                  (or (not end-scheduled-date)
+                      (and scheduled-day
+                           (<= scheduled-day (org-time-string-to-absolute end-scheduled-date))))
+                  (or (not begin-deadline)
+                      (and deadline-day
+                           (>= deadline-day (org-time-string-to-absolute begin-deadline-date))))
+                  (or (not end-deadline-date)
+                      (and deadline-day
+                           (<= deadline-day (org-time-string-to-absolute end-deadline-date))))
+                  (or (not begin-s-or-d)
+                      (or (and scheduled-day
+                               (>= scheduled-day (org-time-string-to-absolute begin-s-or-d)))
+                          (and deadline-day
+                               (>= deadline-day (org-time-string-to-absolute begin-s-or-d)))))
+                  (or (not end-s-or-d)
+                      (or (and scheduled-day
+                               (<= scheduled-day (org-time-string-to-absolute end-s-or-d)))
+                          (and deadline-day
+                               (<= deadline-day (org-time-string-to-absolute end-s-or-d))))))))
+       (unless subtree-valid (min next-headline subtree-end))))
+   #+END_SRC
+
+   #+RESULTS:
+   : z/org-agenda-select
+
+   定义默认视图
+   #+begin_src emacs-lisp
+   (setq org-agenda-custom-commands
+         '(("a" "Customized Agenda View"
+            ((agenda "" ((org-agenda-overriding-header "今日事项")
+                         (org-agenda-format-date "")
+                         (org-scheduled-past-days 0)
+                         (org-deadline-warning-days 0)
+                         (org-agenda-skip-scheduled-if-done t)
+                         (org-agenda-skip-deadline-if-done t)
+                         (org-agenda-todo-ignore-deadlines 'far)
+                         (org-agenda-todo-ignore-scheduled 'future)
+                         (org-agenda-log-mode-add-notes nil)
+                         (org-log-note-clock-out t)
+                         (org-agenda-sorting-strategy '(time-up priority-down category-keep))
+                         (org-agenda-skip-function
+                          '(z/org-agenda-select :no-subtasks t
+                                                :todo-keywords '("TODO" "NEXT")
+                                                :begin-scheduled-or-deadline "today"
+                                                :end-scheduled-or-deadline "today"))))
+             (todo "" ((org-agenda-overriding-header "本周工作项目")
+                       (org-agenda-files '("~/Dropbox/org/tasks/work.org"))
+                       (org-log-note-clock-out t)
+                       (org-agenda-sorting-strategy '(time-up priority-down category-keep))
+                       (org-agenda-skip-function
+                        '(z/org-agenda-select :no-ancestors t
+                                              :todo-keywords '("TODO" "NEXT" "DONE" "ABORT")
+                                              :begin-scheduled-or-deadline "ws"
+                                              :end-scheduled-or-deadline "we"))))
+             (todo "" ((org-agenda-overriding-header "本周个人项目")
+                       (org-agenda-files '("~/Dropbox/org/tasks/personal.org"))
+                       (org-log-note-clock-out t)
+                       (org-agenda-sorting-strategy '(time-up priority-down category-keep))
+                       (org-agenda-skip-function
+                        '(z/org-agenda-select :no-ancestors t
+                                              :todo-keywords '("TODO" "NEXT" "DONE" "ABORT")
+                                              :begin-scheduled-or-deadline "ws"
+                                              :end-scheduled-or-deadline "we"))))
+             (todo "SOMETIME" ((org-agenda-overriding-header "纯计时任务")))))))
+
+   (defun my-agenda-list ()
+     (interactive)
+     (progn
+       (org-agenda "" "a")
+       (delete-other-windows)
+       ))
+   #+end_src
+
+   #+RESULTS:
+   : my-agenda-list
+
+   定义每日回顾视图
+   #+begin_src emacs-lisp
+   (add-to-list 'org-agenda-custom-commands
+                '("l" "Daily Agenda Review"
+                  ((agenda "" ((org-agenda-overriding-header "今日记录")
+                               (org-agenda-span 'day)
+                               (org-agenda-show-log 'clockcheck)
+                               (org-agenda-start-with-log-mode nil)
+                               (org-agenda-archives-mode t)
+                               (org-agenda-log-mode-items '(closed clock))
+                               (org-agenda-clockreport-parameter-plist '(:link t :maxlevel 2 :fileskip0 t :scope agenda-with-archives))
+                               (org-agenda-clockreport-mode t)
+                               (org-agenda-log-mode-add-notes nil)
+                               ))
+                   )))
+
+
+   (defun my-agenda-review ()
+     (interactive)
+     (progn
+       (org-agenda "" "l")
+       (delete-other-windows)
+       ))
+   #+end_src
+
+   #+RESULTS:
+   : my-agenda-review
+
+   定义看板模式视图
+   #+begin_src emacs-lisp
+   (add-to-list 'org-agenda-custom-commands
+                '("k" "Kanban View"
+                  ((agenda "" ((org-agenda-overriding-header "TODO")
+                               (org-agenda-format-date "")
+                               (org-agenda-span 'day)
+                               (org-agenda-time-grid nil)
+                               (org-agenda-use-time-grid nil)
+                               (org-scheduled-past-days 0)
+                               (org-deadline-warning-days 0)
+                               (org-agenda-skip-scheduled-if-done t)
+                               (org-agenda-skip-deadline-if-done t)
+                               (org-log-note-clock-out t)
+                               (org-agenda-todo-ignore-scheduled 'future)
+                               (org-agenda-skip-function
+                                '(z/org-agenda-select :todo-keywords '("TODO")
+                                                      :begin-scheduled-or-deadline "today"
+                                                      :end-scheduled-or-deadline "today"))))
+                   (agenda "" ((org-agenda-overriding-header "NEXT")
+                               (org-agenda-format-date "")
+                               (org-agenda-span 'day)
+                               (org-agenda-time-grid nil)
+                               (org-agenda-use-time-grid nil)
+                               (org-scheduled-past-days 0)
+                               (org-deadline-warning-days 0)
+                               (org-agenda-skip-scheduled-if-done t)
+                               (org-agenda-skip-deadline-if-done t)
+                               (org-log-note-clock-out t)
+                               (org-agenda-todo-ignore-scheduled 'future)
+                               (org-agenda-skip-function
+                                '(z/org-agenda-select :todo-keywords '("NEXT")
+                                                      :begin-scheduled-or-deadline "today"
+                                                      :end-scheduled-or-deadline "today"))))
+                   (agenda "" ((org-agenda-overriding-header "DONE")
+                               (org-agenda-format-date "")
+                               (org-agenda-span 'day)
+                               (org-agenda-time-grid nil)
+                               (org-agenda-use-time-grid nil)
+                               (org-scheduled-past-days 0)
+                               (org-deadline-warning-days 0)
+                               (org-agenda-todo-ignore-scheduled 'future)
+                               (org-agenda-skip-function
+                                '(z/org-agenda-select :todo-keywords '("DONE" "ABORT")
+                                                      :begin-scheduled-or-deadline "today"
+                                                      :end-scheduled-or-deadline "today")))))))
+
+   #+end_src
+
+   clock 相关的设置
+   #+BEGIN_SRC emacs-lisp
+   (setq org-clock-into-drawer t)
+   (setq org-log-note-clock-out t)
+   (setq org-clock-mode-line-total 'current)
+   #+END_SRC
+
+   为方便清理和回顾，让各个任务能在各文件之间转接
+   #+BEGIN_SRC emacs-lisp
+   (setq org-refile-targets
+         (append
+          '(("~/Dropbox/org/inbox.org" :level . 1)
+            ("~/Dropbox/org/journal/inbox.org" :level . 1)
+            ("~/Dropbox/org/memo.org" :level . 1)
+            ("~/Dropbox/org/ideas.org" :level . 1))
+          (mapcar (lambda (file) (cons file (cons :level 1))) (directory-files "~/Dropbox/org/tasks/" t "org"))
+          (mapcar (lambda (file) (cons file (cons :level 1))) (directory-files "~/Dropbox/org/notes/" t "org"))))
+   #+END_SRC
+
+   设置 org-refile-use-outline-path 为 *full-file-path* ，因为我有好几个文件都叫 inbox.org
+   #+BEGIN_SRC emacs-lisp
+   (setq org-refile-use-outline-path 'full-file-path)
+   #+END_SRC
+
+   from https://blog.aaronbieber.com/2017/03/19/organizing-notes-with-refile.html
+   #+BEGIN_SRC emacs-lisp
+   (setq org-outline-path-complete-in-steps nil)
+   (setq org-completion-use-ido nil)
+   #+END_SRC
+
+   设置归档行为
+   #+BEGIN_SRC emacs-lisp
+   (setq org-archive-location "~/Dropbox/org/archives/archive.org::datetree/")
+   #+END_SRC
+
+   设置 helm-org-rifle
+   #+BEGIN_SRC emacs-lisp
+   ;; 在搜索结果中显示 heading 的全路径(包括文件名)
+   (setq helm-org-rifle-show-path t)
+   #+END_SRC
+
+** 写作设置
+   :PROPERTIES:
+   :ID:       fa6fce86-42df-47ec-a3bc-609fc9121964
+   :END:
+
+   定义两个变量，用来存放文章和草稿
+   #+begin_src emacs-lisp
+   (defvar post-dir "~/Dropbox/org/blog/_posts/")
+   (defvar microblog-dir "~/Dropbox/org/blog/_microblog/")
+   (defvar draft-dir "~/Dropbox/org/blog/drafts/")
+   #+end_src
+
+   - TODO: 写一个函数，从指定目录中读取文章标题和文件名，然后塞给 helm 进行补全，最后可以打开指定的文件
+   - TODO: 写两个函数，一个用来查找草稿，一个用来查找已写好的文章
+   - TODO: 写一个函数，将草稿挪到 posts 目录中
+   - TODO: 改进发布函数，发布的时候将文中提到的图片全部放到 blog 目录中，并修正图片路径
+
+   #+BEGIN_SRC emacs-lisp
+   (defun blog-post (title)
+     (interactive "sEnter title: ")
+     (let ((post-file (concat post-dir
+                              (format-time-string "%Y-%m-%d")
+                              "-"
+                              title
+                              ".org")))
+       (progn
+         (switch-to-buffer (find-file-noselect post-file))
+         (insert (concat "#+startup: showall\n"
+                         "#+options: toc:nil\n"
+                         "#+begin_export html\n"
+                         "---\n"
+                         "layout     : post\n"
+                         "title      : \n"
+                         "desc       : \n"
+                         "categories : \n"
+                         "tags       : \n"
+                         "---\n"
+                         "#+end_export\n"
+                         "#+TOC: headlines 2\n")))
+       ))
+   (defun publish-project (project no-cache)
+     (interactive "sName of project: \nsNo-cache?[y/n] ")
+     (if (or (string= no-cache "y")
+             (string= no-cache "Y"))
+         (setq org-publish-use-timestamps-flag nil))
+     (org-publish-project project)
+     (setq org-publish-use-timestamps-flag t))
+
+      ;;;; PUBLISH(org)
+   (setq org-export-default-language "zh-CN")
+   (setq org-publish-project-alist
+         '(("blog-org"
+            ;; Path to your org files.
+            :base-directory "~/Dropbox/org/blog/"
+            :base-extension "org"
+            ;; Path to your Jekyll project.
+            :publishing-directory "~/Projects/github-pages/"
+            :recursive t
+            :htmlized-source t
+            :section-numbers nil
+            :publishing-function org-html-publish-to-html
+            :headline-levels 4
+            :html-extension "html"
+            :body-only t; Only export section between <body> </body>
+            :table-of-contents nil
+            )
+           ("blog-static"
+            :base-directory "~/Dropbox/org/blog/"
+            :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|php"
+            :publishing-directory "~/Projects/github-pages/"
+            :recursive t
+            :publishing-function org-publish-attachment
+            )
+           ("blog" :components ("blog-org" "blog-static"))))
+
+   #+END_SRC
+
+   加一个 capture 设置用来写 microblog
+   #+begin_src emacs-lisp
+   (add-to-list 'org-capture-templates '("W" "Write"))
+   (add-to-list 'org-capture-templates
+                '("Wm" "Write microblog"
+                  plain (file (lambda () (expand-file-name (concat microblog-dir (format-time-string "%s") ".org"))))
+                  "#+startup: showall\n#+options: toc:nil\n#+begin_export html\n---\nlayout     : post\ndate       : %<%FT%T%z>\ntitle      : '闲言碎语 %<%Y-%m-%d %H:%M:%S>'\n---\n#+end_export\n\n%?"
+                  :jump-to-captured t))
+   #+end_src
+
+   #+RESULTS:
+   | Wm | Write microblog | plain | (file (lambda nil (expand-file-name (concat microblog-dir (format-time-string %s) .org)))) | #+startup: showall |
+
+** 个人知识图谱管理
+   :PROPERTIES:
+   :ID:       12acba52-7736-4fed-967e-1daa0ff92471
+   :END:
+
+   定义一个函数，获得当前 headline 的 name
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/get-headline-title ()
+     (orgba-heading-title-at))
+   #+END_SRC
+
+   #+RESULTS:
+   : org-kg/get-headline-title
+
+   定义一个函数，获得当前 headline 的 tags
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/get-headline-tags ()
+     (let ((tags (plist-get (orgba-heading-at) ':tags)))
+       (seq-map #'substring-no-properties tags)))
+   #+END_SRC
+
+   定义一个函数，获得当前 headline 的 id
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/get-headline-id ()
+     (save-excursion
+       (org-back-to-heading)
+       (org-id-get)))
+   #+END_SRC
+
+   #+RESULTS:
+   : org-kg/get-headline-id
+
+   定义一个函数，获得当前 headline 的 properties
+   - 发现有一个 org-element--get-node-properties 函数好像能做这个事情……
+   #+BEGIN_SRC emacs-lisp
+   (defun string-to-keyword (text)
+     (intern (upcase (concat ":" text))))
+
+   (defun org-kg/get-headline-properties ()
+     (save-excursion
+       (save-restriction
+         (org-narrow-to-subtree)
+         (let ((keys (org-buffer-property-keys))
+               (elt (orgba-heading-at)))
+           (let ((values (seq-map (lambda (key) (plist-get elt (string-to-keyword key)))
+                                  keys)))
+             (seq-filter (lambda (x) (and (cdr x) (not (equal "ID" (car x)))))
+                         (mapcar* 'cons keys values)
+                         )
+             )
+           )
+         )
+       )
+     )
+   #+END_SRC
+
+   #+RESULTS:
+   : org-kg/get-headline-properties
+
+   定义一个函数，获得当前 headline 标题后紧跟的正文（只包括文本段落，且不包括其下一级 headline 中的文本段落）
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/normalize-text (text)
+     (string-join
+      (remove "" (seq-map #'string-trim (split-string text "\n")))
+      "\n"
+      )
+     )
+
+   (defun org-kg/get-headline-content ()
+     (save-excursion
+       (save-restriction
+         (org-back-to-heading)
+         (let* ((beg (progn (org-end-of-meta-data t) (point)))
+                (end (if (org-at-heading-p)
+                         (point)
+                       (progn (orgba-next-heading) (point)))))
+           (org-kg/normalize-text (buffer-substring-no-properties beg end))))))
+   #+END_SRC
+
+   #+RESULTS:
+   : org-kg/get-headline-content
+
+   一个坑要注意一下：如果两个 headline 之间空白，没有正文，那么 org-end-of-meta-data 会跳到下一个 headline 的开始位置，这个时候如果再用 orgba-next-heading 就会到第三个 heading 那里……
+
+
+   定义一个函数，组合上述方法得到一个 headline 的完整内容（不包括其下一级 headline）
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/parse-headline ()
+     (let ((result '())
+           (title (org-kg/get-headline-title))
+           (id    (org-kg/get-headline-id))
+           (labels  (string-join (org-kg/get-headline-tags) ":"))
+           (properties (org-kg/get-headline-properties))
+           (content (org-kg/get-headline-content)))
+       (setq result (-snoc result (cons "name" title)))
+       (setq result (-snoc result (cons "id" id)))
+       (when (not (string-empty-p labels))
+         (setq result (-snoc result (cons "labels" labels))))
+       (when (not (string-empty-p content))
+         (setq result (-snoc result (cons "content" content))))
+       (setq result (append result properties))
+       (seq-filter 'cdr result)))
+   #+END_SRC
+
+   #+RESULTS:
+   : org-kg/parse-headline
+
+   定义一个函数，用来从一个 org-kg/parse-headline 的结果里，组装出一个 Neo4j 的 create 语句
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/alist-get (key alist)
+     (cdr (assoc key alist)))
+
+   (defun org-kg/new-node-cypher-from-alist (alist)
+     (let ((labels (org-kg/alist-get "labels" alist))
+           (id   (org-kg/alist-get "id"   alist))
+           (body (string-join
+                  (seq-map (lambda (i) (format "n.%s=\"%s\"" (car i) (cdr i))) alist)
+                  ", "
+                  )))
+       (when (not id)
+         (error "Missing id"))
+       (format "MERGE (n:%s {id:\"%s\"}) SET %s" labels id body)))
+   #+END_SRC
+
+   #+RESULTS:
+   : org-kg/new-node-cypher-from-alist
+
+   定义一个函数，用来从当前 headline 里生成 Neo4j 的 create 语句
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/new-node-cypher-from-headline ()
+     (org-kg/new-node-cypher-from-alist (org-kg/parse-headline)))
+   #+END_SRC
+
+   #+RESULTS:
+   : org-kg/new-node-cypher-from-headline
+
+   定义一个函数，用来发送 query 语句到 Neo4j 中
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/send-query-to-neo4j (query)
+     (message "QUERY: %s" query)
+     (request
+      "http://neo4j:myneo4j@localhost:7474/db/data/cypher"
+      :type "POST"
+      :data (json-encode (list (cons "query" (encode-coding-string query 'utf-8))))
+      :headers '(("Content-Type" . "application/json"))
+      :sync t
+      :parser 'json-read
+      ))
+   #+END_SRC
+
+   #+RESULTS:
+   : org-kg/send-query-to-neo4j
+
+   定义一个函数，将当前 headline 的数据当作实体写入到 Neo4j 中
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/create-node ()
+     (interactive)
+     (let ((cypher (org-kg/new-node-cypher-from-headline)))
+       (org-kg/send-query-to-neo4j cypher)))
+   #+END_SRC
+
+   #+RESULTS:
+   : org-kg/create-node
+
+   定义一个函数，用来找到当前 headline 的下一级 headline
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/next-level-headings ()
+     (save-excursion
+       (save-restriction
+         (org-back-to-heading)
+         (org-narrow-to-subtree)
+         (let ((result-points '())
+               (level (plist-get (orgba-heading-at) ':level)))
+           (orgba-next-heading)
+           (while (/= (point) (point-max))
+             (setq cur-level (plist-get (orgba-heading-at) ':level))
+             (if (equal cur-level (+ level 1))
+                 (add-to-list 'result-points (point)))
+             (orgba-next-heading))
+           result-points))))
+   #+END_SRC
+
+   定义三个函数，用来从当前 headline 中建立关系
+   - 第一个函数，用来建立三元组表示的关系
+   - 第二个函数，用来建立五元组表示的关系
+   - 第三个函数，提供上面两个函数的统一入口，通过 relation-as-node 这个变量来区分
+
+   首先，需要有一个方法，解析第三集 headline 中的文本，得到 id，也就是说，给定下面这样的文本，解析出 id 是 id1
+
+   #+BEGIN_EXAMPLE
+   [[id:id1][text1]]
+   #+END_EXAMPLE
+
+   先偷个懒……直接用 substring 取 5~41……之后再改成正则表达式
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/get-ref-id (link)
+     (substring link 5 41))
+   #+END_SRC
+
+   然后写一个方法，获得第一级 headline、第二级 headline、第三级 headline 各自的位置组成的三元组
+   #+BEGIN_SRC emacs-lisp
+   (require 'dash)
+   (defun org-kg/get-paths-point (&optional position)
+     (save-excursion
+       (if position
+           (progn
+             (goto-char position)
+             (org-back-to-heading)
+             )
+         (orgba-top-parent))
+       (let ((cur-point (point))
+             (next-level-points (org-kg/next-level-headings))
+             (results '()))
+         (if (not next-level-points)
+             (list (list cur-point))
+           (seq-map
+            (lambda (path) (cons cur-point path))
+            (-flatten-n 1 (seq-map (lambda (x) (org-kg/get-paths-point x)) next-level-points)))))))
+   #+END_SRC
+
+   设定变量 relation-as-node
+   #+BEGIN_SRC emacs-lisp
+   (setq relation-as-node t)
+   #+END_SRC
+
+   写一个方法，给定三个位置构成的路径，获得对应的三个 headline 的信息
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/parse-points (points)
+     (save-excursion
+       (setq results '())
+       (when (>= 3 (length points))
+         (goto-char (nth 0 points))
+         (setq results (-snoc results (org-kg/parse-headline)))
+         (goto-char (nth 1 points))
+         (setq results (-snoc results (org-kg/parse-headline)))
+         (goto-char (nth 2 points))
+         (setq results (-snoc results (org-kg/parse-headline))))
+         results)
+     )
+   #+END_SRC
+
+   这两个问题我觉得不处理了，之后通过方法保证每个 item 都有 id，而不是靠用户手工加 id 或者在 parse-headline 的时候才把 id 加上。解析的时候如果没有 id 就直接报错完事了，做什么兼容。
+
+   - 碰到的问题……在 org-kg/parse-headline 加了 t 后，point 可能发生改变，这样原来的 points 就不可靠了……
+   - relation-as-node 为 t 时也有类似的副作用
+
+   定义一个函数，根据 id 返回 headline 的内容
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/parse-headline-by-id (id)
+     (save-excursion
+       (org-id-goto id)
+       (org-kg/parse-headline)))
+   #+END_SRC
+
+   写一个方法，给定三个 headline 的数据，生成关系创建语句
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/new-relation-cypher-from-data (triple)
+     (save-excursion
+       (let ((subject (nth 0 triple))
+             (relation (nth 1 triple))
+             (object (nth 2 triple)))
+         (setq rel-body (string-join (seq-map (lambda (i) (format "r.%s=\"%s\"" (car i) (cdr i))) relation)
+                                     ", "))
+         ;; check error
+         (when (not (org-kg/alist-get "id" subject))
+           (error "id missing in subject"))
+         (when (not (org-kg/alist-get "labels" subject))
+           (error "labels missing in subject"))
+         (when (and relation-as-node
+                    (not (org-kg/alist-get "id" relation)))
+           (error "id missing in relation"))
+         (setq object-id (org-kg/get-ref-id (org-kg/alist-get "name" object)))
+         (setq object (org-kg/parse-headline-by-id object-id))
+         (when (not (org-kg/alist-get "labels" object))
+           (error "labels missing in object"))
+
+         ;; make cypher
+         (if (not relation-as-node)
+             ;; 最好改成一个常量定义
+             (format "MATCH (a:%s {id:\"%s\"}), (b:%s {id:\"%s\"}) MERGE (a)-[r:%s]->(b)%s"
+                     (org-kg/alist-get "labels" subject)
+                     (org-kg/alist-get "id" subject)
+                     (org-kg/alist-get "labels" object)
+                     (org-kg/alist-get "id" object)
+                     (org-kg/alist-get "name" relation)
+                     (cond ((not rel-body) "")
+                           (t (concat " SET " rel-body))))
+           (format (concat "MATCH (a:%s {id:\"%s\"}), (b:%s {id:\"%s\"})\n"
+                           "MERGE (r:%s {name:\"%s\", id:\"%s\"})\n"
+                           "MERGE (a)-[:svb]->(r)\n"
+                           "MERGE (r)-[:vob]->(b)\n"
+                           "%s"
+                           )
+                   (org-kg/alist-get "labels" subject)
+                   (org-kg/alist-get "id" subject)
+                   (org-kg/alist-get "labels" object)
+                   (org-kg/alist-get "id" object)
+                   (let ((rel-labels (org-kg/alist-get "labels" relation)))
+                     (cond ((not rel-labels) "关系")
+                           (t (string-join (list "关系" rel-labels) ":"))))
+                   (org-kg/alist-get "name" relation)
+                   (org-kg/alist-get "id"   relation)
+                   (cond ((not rel-body) "")
+                         (t (concat "SET " rel-body))))))))
+   #+END_SRC
+
+   #+RESULTS:
+   : org-kg/new-relation-cypher-from-data
+
+   搞定，然后写一个方法，直接取 1-3 级 headline ，然后创建关系
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/create-relation ()
+     (interactive)
+     (save-excursion
+       (orgba-top-parent)
+       (seq-map 'org-kg/send-query-to-neo4j
+                (seq-map
+                 'org-kg/new-relation-cypher-from-data
+                 (seq-map 'org-kg/parse-points (org-kg/get-paths-point))))))
+   #+END_SRC
+
+   然后，目前的方法是让关系表示为节点的，所以写一个方法，检查所有一二级 headline，如果有没有 id 的就给加上吧
+
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/prepare ()
+     (interactive)
+     (save-excursion
+       (save-restriction
+         (widen)
+         (goto-char (point-min))
+         (orgba-next-heading)
+         (while (/= (point) (point-max))
+           (setq cur-level (plist-get (orgba-heading-at) ':level))
+           (when (or (equal 1 cur-level)
+                     (and relation-as-node (equal 2 cur-level)))
+             (org-id-get-create))
+           (orgba-next-heading)))))
+   #+END_SRC
+
+   写一个方法用来删除节点
+   #+BEGIN_SRC emacs-lisp
+   (defun org-kg/delete-node-cypher-from-alist (alist)
+     (let ((labels (org-kg/alist-get "labels" alist))
+           (id (org-kg/alist-get "id" alist)))
+       (format "MATCH (n:%s {id:\"%s\"}) DETACH DELETE n"
+               (nth 0 (split-string labels ":"))
+               id)))
+
+
+   (defun org-kg/delete-node-cypher-from-headline ()
+     (org-kg/delete-node-cypher-from-alist (org-kg/parse-headline)))
+
+
+   (defun org-kg/delete-node ()
+     (interactive)
+     (org-kg/send-query-to-neo4j (org-kg/delete-node-cypher-from-headline)))
+   #+END_SRC
+
+   #+RESULTS:
+   : org-kg/delete-node
+
+** 论文管理
+   :PROPERTIES:
+   :ID:       a82e7202-db83-4088-b3cf-2aa20015d0b3
+   :END:
+
+
+   #+begin_src emacs-lisp
+   (setq bibtex-completion-notes-path "~/Dropbox/org/roam/"
+         bibtex-completion-bibliography "~/Dropbox/org/roam/我的文库.bib"
+         bibtex-completion-pdf-field "file")
+
+   (setq reftex-default-bibliography '("~/Dropbox/org/roam/我的文库.bib"))
+
+   ;; see org-ref for use of these variables
+   (require 'org-ref)
+   (setq org-ref-completion-library 'org-ref-ivy-cite
+         org-ref-get-pdf-filename-function 'org-ref-get-pdf-filename-helm-bibtex
+         org-ref-bibliography-notes "~/Dropbox/org/roam/notes.org"
+         org-ref-default-bibliography '("~/Dropbox/org/roam/我的文库.bib")
+         org-ref-notes-directory "~/Dropbox/org/roam/"
+         org-ref-notes-function 'orb-edit-notes)
+   #+end_src
+
+** org-roam 配置
+   :PROPERTIES:
+   :ID:       6e75922c-4d6f-427d-980c-8cbda1eb077a
+   :END:
+
+   设置 org-roam 笔记存放目录
+   #+begin_src emacs-lisp
+   (setq org-roam-directory "~/Dropbox/org/roam")
+   ;; (setq org-roam-directory "~/roam")
+   ;; (setq org-roam-directory "~/Documents/roam")
+   (add-hook 'after-init-hook 'org-roam-mode)
+   #+end_src
+
+   启用 org-roam-protocol，用来从浏览器中抓取网页标题、链接创建新的笔记
+   #+begin_src emacs-lisp
+   (require 'org-roam-protocol)
+   #+end_src
+
+   启动并设置 org-roam-server
+   #+begin_src emacs-lisp
+   (require 'org-roam-protocol)
+   (setq org-roam-server-host "127.0.0.1"
+         org-roam-server-port 9090
+         org-roam-server-export-inline-images t
+         org-roam-server-authenticate nil
+         org-roam-server-network-arrows nil
+         org-roam-server-label-truncate t
+         org-roam-server-label-truncate-length 60
+         org-roam-server-label-wrap-length 20)
+   (org-roam-server-mode)
+   #+end_src
+
+   设置 org-roam-capture 的模板
+   #+begin_src emacs-lisp
+   (setq org-roam-capture-templates nil)
+   (add-to-list 'org-roam-capture-templates `("d" "Default" plain (function org-roam-capture--get-point)
+                                              "%?"
+                                              :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                              :head ,(concat "#+title: ${title}\n"
+                                                             "#+STARTUP: showall\n"
+                                                             "#+roam_alias:\n"
+                                                             "#+roam_tags: 未分类\n\n"
+                                                             "created at: %U\n\n")
+                                              :unnarrowed t))
+   (add-to-list 'org-roam-capture-templates `("t" "Term" plain (function org-roam-capture--get-point)
+                                              "%?"
+                                              :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                              :head ,(concat "#+title: 术语:${title}\n"
+                                                             "#+STARTUP: showall\n"
+                                                             "#+roam_alias: ${title}\n"
+                                                             "#+roam_tags: 术语\n\n"
+                                                             "created at: %U\n\n"
+                                                             "* 基本信息\n\n"
+                                                             "  - 领域:\n"
+                                                             "  - 相关术语:\n"
+                                                             "  - 释义:\n\n"
+                                                             "* 笔记\n\n")
+                                              ))
+   (add-to-list 'org-roam-capture-templates `("o" "Opinion" plain (function org-roam-capture--get-point)
+                                              "%?"
+                                              :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                              :head ,(concat "#+title: 观点:${title}\n"
+                                                             "#+STARTUP: showall\n"
+                                                             "#+roam_tags: 观点\n\n"
+                                                             "created at: %U\n\n"
+                                                             "* 基本信息\n\n"
+                                                             "  - 内容: ${title}\n"
+                                                             "  - 出处:\n"
+                                                             "  - 论据:\n\n"
+                                                             "* 我的想法\n\n"
+                                                             )
+                                              ))
+   (add-to-list 'org-roam-capture-templates `("p" "Person" plain (function org-roam-capture--get-point)
+                                              ""
+                                              :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                              :head ,(concat "#+title: ${title}\n"
+                                                             "#+STARTUP: showall\n"
+                                                             "#+roam_alias: \n"
+                                                             "#+roam_tags: 人物\n\n"
+                                                             "created at: %U\n\n"
+                                                             "* 基本信息\n\n"
+                                                             "  - 性别: %?\n"
+                                                             "  - 生日: \n"
+                                                             "  - 籍贯: \n"
+                                                             "  - 教育经历:\n"
+                                                             "  - 工作经历:\n"
+                                                             "  - 家人:\n"
+                                                             "  - 居住地址:\n"
+                                                             "  - 联系方式:\n\n"
+                                                             "    - 手机:\n"
+                                                             "    - 微信:\n"
+                                                             "    - 邮箱:\n"
+                                                             "* 相关记忆\n")
+                                              ))
+   (add-to-list 'org-roam-capture-templates `("q" "Question" plain (function org-roam-capture--get-point)
+                                              ""
+                                              :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                              :head ,(concat "# -*- org-footnote-section: \"相关资料\"; -*-\n"
+                                                             "#+title: ${title}\n"
+                                                             "#+STARTUP: showall\n"
+                                                             "#+roam_alias: \n#"
+                                                             "+roam_tags: 问题 未解决\n\n"
+                                                             "created at: %U\n\n"
+                                                             "* 问题信息\n\n"
+                                                             "  - 提出时间: %U\n"
+                                                             "  - 提出动机:\n\n    %?\n\n"
+                                                             "* 解答记录\n\n"
+                                                             "* 答案\n\n"
+                                                             "* 相关资料")))
+   (add-to-list 'org-roam-capture-templates `("s" "Software" plain (function org-roam-capture--get-point)
+                                              "%?"
+                                              :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                              :head ,(concat "#+title: ${title}\n"
+                                                             "#+startup: showall\n"
+                                                             "#+roam_alias: \n"
+                                                             "#+roam_tags: 软件\n\n"
+                                                             "created at: %U\n\n"
+                                                             "* 基本信息\n\n"
+                                                             "  - 简介: \n"
+                                                             "  - 软件类型: \n"
+                                                             "  - 支持系统: \n"
+                                                             "  - 是否开源: \n"
+                                                             "  - 主页: \n"
+                                                             "  - 文档: \n"
+                                                             "  - 功能: \n\n"
+                                                             "* 笔记心得\n\n"
+                                                             )))
+
+   (add-to-list 'org-roam-capture-templates `("P" "Plugin" plain (function org-roam-capture--get-point)
+                                              "%?"
+                                              :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                              :head ,(concat "#+title: ${title}\n"
+                                                             "#+startup: showall\n"
+                                                             "#+roam_alias: \n"
+                                                             "#+roam_tags: 插件\n\n"
+                                                             "created at: %U\n\n"
+                                                             "* 基本信息\n\n"
+                                                             "  - 所属软件: \n"
+                                                             "  - 功能: \n"
+                                                             "  - 主页: \n"
+                                                             "  - 安装方法: \n"
+                                                             "* 技巧和心得\n\n"
+                                                             )))
+   (add-to-list 'org-roam-capture-templates `("c" "Card(问答对)" plain (function org-roam-capture--get-point)
+                                              ,(concat "* 问题\n\n"
+                                                       "  ${title}\n\n"
+                                                       "* 答案\n\n"
+                                                       "  %?\n\n"
+                                                       "* 参考资料\n")
+                                              :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                              :head ,(concat "#+title: ${title}\n"
+                                                             "#+startup: showall\n"
+                                                             "#+roam_alias: \n"
+                                                             "#+roam_tags: 问答\n\n"
+                                                             "created at: %U\n\n")))
+   (add-to-list 'org-roam-capture-templates `("f" "Fact(事实)" plain (function org-roam-capture--get-point)
+                                              ""
+                                              :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                              :head ,(concat "#+title: ${title}\n"
+                                                             "#+startup: showall\n"
+                                                             "#+roam_alias: \n"
+                                                             "#+roam_tags: 事实\n\n"
+                                                             "created at: %U\n\n"
+                                                             "- 内容: ${title}%?\n"
+                                                             "- 来源:\n"
+                                                             )))
+   (add-to-list 'org-roam-capture-templates `("F" "Food" plain (function org-roam-capture--get-point)
+                                              "%?"
+                                              :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                              :head ,(concat "#+title: ${title}\n"
+                                                             "#+startup: showall\n"
+                                                             "#+roam_alias: \n"
+                                                             "#+roam_tags: 食物\n\n"
+                                                             "created at: %U\n\n"
+                                                             "* 基本信息\n\n"
+                                                             "  - 类型: \n"
+                                                             "  - 产地: \n"
+                                                             "  - 特点: \n\n"
+                                                             )))
+   #+end_src
+
+   #+begin_src emacs-lisp
+   (add-to-list 'org-roam-capture-templates `("B" "Blog" plain (function org-roam-capture--get-point)
+                                              "%?"
+                                              :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                              :head ,(concat "#+title: ${title}\n"
+                                                             "#+startup: showall\n"
+                                                             "#+roam_alias: \n"
+                                                             "#+roam_tags: 写作 博客\n\n"
+                                                             "created at: %U\n\n"
+                                                             "* 大纲\n\n"
+                                                             "* 材料\n\n"
+                                                             "* 正文\n\n"
+                                                             )))
+   #+end_src
+
+   把 org-roam-capture-immediate-template 为与 org-roam-capture-immediates 一样
+   #+begin_src emacs-lisp
+   (setq org-roam-capture-immediate-template '("d" "default" plain (function org-roam-capture--get-point)
+                                               "%?"
+                                               :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                               :head "#+title: ${title}\n#+roam_alias:\n#+roam_tags:\n\n"
+                                               :unnarrowed t
+                                               :immediate-finish t))
+   #+end_src
+
+   设置网页捕获的模板
+   #+begin_src emacs-lisp
+   (setq org-roam-capture-ref-templates nil)
+   (add-to-list 'org-roam-capture-ref-templates '("r" "Reference" plain (function org-roam-capture--get-point)
+                                                  ""
+                                                  :file-name "${slug}"
+                                                  :head "#+title: ${title}\n#+roam_key: ${ref}\n#+roam_alias:\n#+roam_tags: 网页\n\n"
+                                                  :unnarrowed t))
+   (add-to-list 'org-roam-capture-ref-templates '("a" "Annotate" plain (function org-roam-capture--get-point)
+                                                  "\n%U ${body}\n"
+                                                  :file-name "${slug}"
+                                                  :head "#+title: ${title}\n#+roam_key: ${ref}\n#+roam_alias:\n#+roam_tags: 网页\n\n"
+                                                  :unnarrowed t
+                                                  :immediate-finish t))
+   #+end_src
+
+   将 helm-bibtex 中的 Edit Notes 设置为 org-roam 中的函数，使得可以直接创建论文笔记到 org-roam 目录中
+   #+begin_src emacs-lisp
+   (setq bibtex-completion-edit-notes-function 'orb-edit-notes-ad)
+   #+end_src
+
+   论文笔记的模板
+   #+begin_src emacs-lisp
+   (setq orb-templates nil)
+   (setq orb-preformat-keywords '(("citekey" . "=key=")
+                                  ("type" . "=type=")
+                                  "title" "file" "url" "author-or-editor" "keywords"))
+   (add-to-list 'orb-templates '("r" "Reference" plain (function org-roam-capture--get-point)
+                                 ""
+                                 :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                 :head "#+title: ${title}\n#+roam_key: ${ref}\n#+roam_alias:\n#+roam_tags: 论文\n\n"
+                                 :unnarrowed t))
+   (add-to-list 'orb-templates `("b" "Book Note" plain (function org-roam-capture--get-point)
+                                 ""
+                                 :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                 :head ,(concat "#+title: ${title}\n#+roam_key: ${ref}\n#+roam_alias:\n#+roam_tags: 书籍\n\n"
+                                                "* 观点\n"
+                                                "* 事实\n"
+                                                "* 阅读笔记\n"
+                                                "  :PROPERTIES:\n"
+                                                "  :Custom_ID: ${citekey}\n"
+                                                "  :URL: ${url}\n"
+                                                "  :AUTHOR: ${author-or-editor}\n"
+                                                "  :NOTER_DOCUMENT: %(orb-process-file-field \"${citekey}\")\n"
+                                                "  :NOTER_PAGE:\n"
+                                                "  :END:\n\n"
+                                                "* 个人总结\n\n"
+                                                )
+                                 :unnarrowed t))
+   (add-to-list 'orb-templates `("n" "General Note" plain (function org-roam-capture--get-point)
+                                 ""
+                                 :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                 :head ,(concat "#+title: ${title}\n#+roam_key: ${ref}\n#+roam_tags: 文章\n\n"
+                                                "* 观点\n"
+                                                "* 事实\n"
+                                                "* 阅读笔记\n"
+                                                "  :PROPERTIES:\n"
+                                                "  :Custom_ID: ${citekey}\n"
+                                                "  :URL: ${url}\n"
+                                                "  :AUTHOR: ${author-or-editor}\n"
+                                                "  :NOTER_DOCUMENT: %(orb-process-file-field \"${citekey}\")\n"
+                                                "  :NOTER_PAGE:\n"
+                                                "  :END:\n\n"
+                                                "* 个人总结\n\n"
+                                                )
+                                 :unnarrowed t))
+   (add-to-list 'orb-templates `("p" "Paper Note" plain (function org-roam-capture--get-point)
+                                 "%?"
+                                 :file-name "%<%Y%m%d%H%M%S>-${slug}"
+                                 :head ,(concat "#+title: ${title}\n#+roam_key: ${ref}\n#+roam_tags: 论文\n\n"
+                                                "* 观点\n"
+                                                "* 事实\n"
+                                                "* 相关工作\n"
+                                                "* 模型与方法\n"
+                                                "* 实验和结论\n"
+                                                "* 阅读笔记\n"
+                                                "  :PROPERTIES:\n"
+                                                "  :Custom_ID: ${citekey}\n"
+                                                "  :URL: ${url}\n"
+                                                "  :AUTHOR: ${author-or-editor}\n"
+                                                "  :NOTER_DOCUMENT: %(orb-process-file-field \"${citekey}\")\n"
+                                                "  :NOTER_PAGE:\n"
+                                                "  :END:\n\n"
+                                                "* 个人总结\n\n"
+                                                )
+                                 :unnarrowed t))
+   #+end_src
+
+
+   设置 org-roam 的常用命令的别名
+   #+begin_src emacs-lisp
+   (defalias 'z/ro 'org-roam-find-file)
+   (defalias 'z/ri 'org-roam-insert)
+   (defalias 'z/rn 'org-roam-capture)
+   (defalias 'z/rI 'org-roam-insert-immediate)
+   #+end_src
+
+   设置 org-roam 的补全
+   #+begin_src emacs-lisp
+   ; (require 'company-org-roam)
+   ; (push 'company-org-roam company-backends)
+   #+end_src
+
+   写了几个函数，用来在当前文档中插入今天创建的笔记
+   #+begin_src emacs-lisp
+   (defun get-org-roam-daily-notes (&optional date)
+     (let* ((date-string (if date (format "%%%s%%" date) (format-time-string "%%%Y%m%d%%")))
+            (today-notes (org-roam-db-query [:select [file (funcall min title)]
+                                             :from titles :where (like file $r1)
+                                             :group-by file]
+                                            date-string)))
+       (seq-map (lambda (note)
+                  (append note (car (org-roam-db-query [:select [tags]
+                                                        :from tags
+                                                        :where (= file $s1)]
+                                                       (car note)))))
+                today-notes)))
+
+
+   (defun insert-org-roam-daily-notes (&optional date)
+     (interactive)
+     (let* ((date-string (if date date (s-replace "-" "" (org-read-date))))
+            (notes (get-org-roam-daily-notes date-string))
+            (num-notes (length notes)))
+       (when (> num-notes 0)
+         (insert "\n")
+         (dotimes (i num-notes)
+           (let ((note (nth i notes)))
+             (indent-relative-maybe)
+             (insert (format "- %s: [[%s][%s]]\n"
+                             (string-join (nth 2 note))
+                             (nth 0 note)
+                             (nth 1 note))))))))
+
+   (defun insert-org-roam-today-notes ()
+     (interactive)
+     (insert-org-roam-daily-notes (format-time-string "%Y%m%d")))
+   #+end_src
+
+* 其他
+
+** Edit Serevr
+
+   配合 Chrome 的 Edit with Emacs 插件可以在需要输入、编辑时调用 Emacs
+   #+BEGIN_SRC emacs-lisp
+   (when (require 'edit-server nil t)
+     (setq edit-server-new-frame nil)
+     (edit-server-start))
+
+   (add-hook 'edit-server-start-hook
+             (lambda ()
+               (when (or (string-match "github.com" (buffer-name))
+                         (string-match "gitlab.com" (buffer-name))
+                         (string-match "bearychat.com" (buffer-name)))
+                 (markdown-mode))))
+   #+END_SRC
+
+* 扩展无关的函数定义
+
+** 对注释和反注释的改进
+
+   默认的注释行为是按下 'M-;' 后对所在行进行注释，但经常还会需要 *将某行注释掉* ，这里定义了一个为某行添加注释或者注释某行的方法。
+   #+BEGIN_SRC emacs-lisp
+   (defun comment-dwim-line (&optional arg)
+     (interactive "*P")
+     (comment-normalize-vars)
+     (if (and
+          (not (region-active-p))
+          (not (looking-at "[ \t]*$")))
+         (comment-or-uncomment-region
+          (line-beginning-position)
+          (line-end-position))
+       (comment-dwim arg)))
+   #+END_SRC
+
+** 行/区域上下移动
+
+   首先定义行移动的方法
+   #+BEGIN_SRC emacs-lisp
+   (defun move-line (n)
+     "Move the current line up or down by N lines."
+     (interactive "p")
+     (setq col (current-column))
+     (beginning-of-line)
+     (setq start (point))
+     (end-of-line)
+     (forward-char)
+     (setq end (point))
+     (let ((line-text (delete-and-extract-region start end)))
+       (forward-line n)
+       (insert line-text)
+       (forward-line -1)
+       (forward-char col)))
+
+   (defun move-line-up (n)
+     "Move the current line up by N lines."
+     (interactive "p")
+     (move-line (if (null n) -1 (- n))))
+
+   (defun move-line-down (n)
+     "Move the current line down by N lines."
+     (interactive "p")
+     (move-line (if (null n) 1 n)))
+   #+END_SRC
+
+   然后定义区域移动的方法
+   #+BEGIN_SRC emacs-lisp
+   (defun move-region (start end n)
+     "Move the current region up or down by N lines."
+     (interactive "r\np")
+     (let ((line-text (delete-and-extract-region start end)))
+       (forward-line n)
+       (let ((start (point)))
+         (insert line-text)
+         (setq deactivate-mark nil)
+         (set-mark start))))
+
+   (defun move-region-up (start end n)
+     "Move the current line up by N lines."
+     (interactive "r\np")
+     (move-region start end (if (null n) -1 (- n))))
+
+   (defun move-region-down (start end n)
+     "Move the current line down by N lines."
+     (interactive "r\np")
+     (move-region start end (if (null n) 1 n)))
+   #+END_SRC
+
+   最后将行移动和区域移动整合到一起，这样在后面定义快捷键的时候可以使用同一个快捷键
+   #+BEGIN_SRC emacs-lisp
+   (defun move-line-region-up (&optional start end n)
+     (interactive "r\np")
+     (if (use-region-p) (move-region-up start end n) (move-line-up n)))
+
+   (defun move-line-region-down (&optional start end n)
+     (interactive "r\np")
+     (if (use-region-p) (move-region-down start end n) (move-line-down n)));
+   #+END_SRC
+
+** 显示非 ASCII 字符
+
+   执行这个方法后，能在一个新的 buffer 中高亮所有非 ASCII 字符。写这个方法的一个目的是用来检查文本中是否有全角空白字符。
+   #+BEGIN_SRC emacs-lisp
+   (defun occur-non-ascii ()
+     "Find any non-ascii characters in the current buffer."
+     (interactive)
+     (occur "[^[:ascii:]]"))
+   #+END_SRC
+
+** 插入 uuid
+
+   #+BEGIN_SRC emacs-lisp
+   (defun insert-random-uuid ()
+     "Insert a UUID. This uses a simple hashing of variable data.
+   Example of a UUID: 1df63142-a513-c850-31a3-535fc3520c3d
+
+   Note: this code uses https://en.wikipedia.org/wiki/Md5 , which is not cryptographically safe. I'm not sure what's the implication of its use here.
+
+   Version 2015-01-30
+   URL `http://ergoemacs.org/emacs/elisp_generate_uuid.html'
+   "
+     ;; by Christopher Wellons, 2011-11-18. Editted by Xah Lee.
+     ;; Edited by Hideki Saito further to generate all valid variants for "N" in xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx format.
+     (interactive)
+     (let ((myStr (md5 (format "%s%s%s%s%s%s%s%s%s%s"
+                               (user-uid)
+                               (emacs-pid)
+                               (system-name)
+                               (user-full-name)
+                               (current-time)
+                               (emacs-uptime)
+                               (garbage-collect)
+                               (buffer-string)
+                               (random)
+                               (recent-keys)))))
+
+       (insert (format "%s-%s-4%s-%s%s-%s"
+                       (substring myStr 0 8)
+                       (substring myStr 8 12)
+                       (substring myStr 13 16)
+                       (format "%x" (+ 8 (random 4)))
+                       (substring myStr 17 20)
+                       (substring myStr 20 32)))))
+
+   #+END_SRC
+
+** 查询词典
+
+   来自 http://lifegoo.pluskid.org/wiki/EmacsStardict.html
+   #+BEGIN_SRC emacs-lisp
+   (defun kid-sogou-dict ()
+      (interactive)
+      (let ((begin (point-min))
+            (end (point-max)))
+        (if mark-active
+            (setq begin (region-beginning)
+                  end (region-end))
+          (save-excursion
+            (backward-word)
+            (mark-word)
+            (setq begin (region-beginning)
+                  end (region-end))))
+        ;; 有时候 stardict 会很慢，所以在回显区显示一点东西
+        ;; 以免觉得 Emacs 在干什么其他奇怪的事情。
+        (message "searching for %s ..." (buffer-substring begin end))
+        (tooltip-show
+         (shell-command-to-string
+          (concat "ydcv "
+                  (buffer-substring begin end))))))
+   (global-set-key (kbd "C-c d") 'kid-sogou-dict)
+
+   (defun ydcv (word)
+     (interactive "sEnter the word: ")
+     (let ((word-result (shell-command-to-string (concat "ydcv " word))))
+       (insert word-result)))
+   #+END_SRC
+
+** 当如当前时间到当前光标位置
+
+   #+BEGIN_SRC emacs-lisp
+   (defun z/time ()
+     (interactive)
+     (insert
+      (format-time-string "[%Y-%m-%d %a %H:%M:%S]")))
+   #+END_SRC
+
+* 全局快捷键设置
+  :PROPERTIES:
+  :ID:       24a22218-1949-49cd-8fa2-ed7228fb80ff
+  :END:
+
+  首先设置 smex，有了 smex 后，可以减少快捷键的使用
+  #+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
+  (global-set-key (kbd "C-x k") 'kill-this-buffer)
+  #+End_SRC
+
+  为了更好地使用 smex，为一些常用的命令设置别名。比如说下面这些命令，原先都设置为用 F2、F3 这样的键，在 HHKB 键盘上很不方便。
+  #+BEGIN_SRC emacs-lisp
+  (defalias 'z/hs 'hs-toggle-hiding)
+  (defalias 'z/bms 'bookmark-set)
+  (defalias 'z/bml 'helm-filtered-bookmarks)
+  (defalias 'z/fs 'toggle-frame-fullscreen)
+  (defalias 'z/mw 'toggle-frame-maximized)
+  (defalias 'z/evalb 'eval-buffer)
+  (defalias 'z/evals 'eval-last-sexp)
+  (defalias 'z/latex 'org-toggle-latex-fragment)
+  (defalias 'z/image 'org-redisplay-inline-images)
+  (defalias 'z/mark 'z/anki-mark-region)
+  ;; magit
+  (defalias 'z/gs 'magit-status)
+  (defalias 'z/cm 'magit-commit)
+  (defalias 'z/rebase 'magit-rebase-interactive)
+  (defalias 'z/gl 'magit-log-head)
+  (defalias 'z/app 'counsel-linux-app)
+  (defalias 'z/repl 'replace-string)
+  (defalias 'z/repr 'replace-regexp)
+  (defalias 'z/install 'package-install)
+  (defalias 'z/oa 'org-archive-subtree)
+  ; (defalias 'z/ffh #'counsel-ffdata-firefox-history)
+  ; (defalias 'z/ffb #'counsel-ffdata-firefox-bookmarks)
+  #+END_SRC
+
+  用于编辑的一些快捷键
+  #+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "M-p") 'move-line-region-up)
+  (global-set-key (kbd "M-n") 'move-line-region-down)
+  (global-set-key (kbd "C-z") 'delete-trailing-whitespace)
+  #+END_SRC
+
+  其他全局快捷键
+  #+BEGIN_SRC emacs-lisp
+  ;; 选择
+  (global-set-key (kbd "C-M-SPC") 'set-mark-command)
+  (global-set-key (kbd "C-=") 'er/expand-region)
+
+  ;; 搜索，快速定位
+  (global-set-key (kbd "C-c j") 'avy-goto-word-or-subword-)
+  (global-set-key (kbd "C-c h o") 'helm-org-rifle)  ;搜索 org 文件
+  (global-set-key (kbd "C-c h s") 'helm-do-grep-ag) ;使用 ag 搜索目录
+  (global-set-key (kbd "C-s") 'swiper-isearch) ;不使用内置的 search 而是使用 swiper
+  (setq ivy-display-style 'fancy)
+
+  ;; coding
+  (global-set-key (kbd "M-;") 'comment-dwim-line)
+
+  ;; org-mode
+  (global-set-key (kbd "C-c a") 'my-agenda-list)
+  (global-set-key (kbd "C-c r") 'my-agenda-review)
+  (global-set-key (kbd "C-c b") 'org-iswitchb)
+  (global-set-key (kbd "C-c c") 'org-capture)
+  (global-set-key (kbd "C-c l") 'org-store-link)
+  (global-set-key (kbd "C-c m") 'org-tags-view)
+  (global-set-key (kbd "C-c p") 'blog-post)
+  (global-set-key (kbd "C-c q") 'publish-project)
+  #+END_SRC

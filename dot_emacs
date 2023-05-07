@@ -1,0 +1,36 @@
+(setq url-proxy-services
+      '(("no_proxy" . "\\(localhost\\|10\\..*\\|192\\.168\\..*\\|behye\\|58\\.*\\)")
+        ("http" . "localhost:1235")
+        ("https" . "localhost:1235")))
+
+
+(require 'package)
+(setq package-archives '())
+(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/"))
+(add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(setq package-check-signature nil)
+(package-initialize)
+
+;; install basic dependencies
+(when (not (require 'org nil :noerror))
+  (progn
+    (call-process "notify-send" nil t nil "org-mode is not installed")
+    (setq url-http-attempt-keepalives nil)
+    (package-refresh-contents)
+    (package-install 'org)))
+
+(org-babel-load-file (concat (getenv "HOME") "/" "Projects/emacs_config/emacs_config.org"))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(org-dotemacs zotxt zotelo yasnippet-snippets yaml-mode yafolding writeroom-mode use-package treemacs-projectile thrift tblui spinner request-deferred ranger rainbow-fart pyim-basedict pyim py-autopep8 posframe plantuml-mode org-roam-server org-remark org-ref org-ql org-plus-contrib org-noter-pdftools org-contrib org-alert openwith ob-restclient ob-ipython nlinum neotree mermaid-mode markdown-mode magit macrostep ledger-mode key-chord js2-mode ivy-bibtex imenu-list hydandata-light-theme helm-bibtex grip-mode graphviz-dot-mode go-mode gnu-elpa-keyring-update general fuzzy font-lock+ flucui-themes expand-region emacsql-sqlite edit-server dumb-jump dired-ranger deft cypher-mode counsel company-org-roam company-jedi command-log-mode color-theme-sanityinc-tomorrow color-theme-modern color-theme cnfonts anki-editor all-the-icons ag)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

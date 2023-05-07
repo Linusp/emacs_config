@@ -1,0 +1,126 @@
+[submodule "emacs.d/site-lisp/org-brain"]
+	path = emacs.d/site-lisp/org-brain
+	url = git@github.com:Kungsgeten/org-brain
+[submodule "emacs.d/site-lisp/awesome-tray"]
+	path = emacs.d/site-lisp/awesome-tray
+	url = https://github.com/manateelazycat/awesome-tray
+[submodule "emacs.d/site-lisp/emacs-application-framework"]
+	path = emacs.d/site-lisp/emacs-application-framework
+	url = https://github.com/manateelazycat/emacs-application-framework
+[submodule "emacs.d/site-lisp/auto-virtualenvwrapper.el"]
+	path = emacs.d/site-lisp/auto-virtualenvwrapper.el
+	url = https://github.com/robert-zaremba/auto-virtualenvwrapper.el
+[submodule "emacs.d/site-lisp/virtualenvwrapper.el"]
+	path = emacs.d/site-lisp/virtualenvwrapper.el
+	url = https://github.com/porterjamesj/virtualenvwrapper.el
+[submodule "emacs.d/site-lisp/moody"]
+	path = emacs.d/site-lisp/moody
+	url = https://github.com/tarsius/moody
+[submodule "emacs.d/site-lisp/minions"]
+	path = emacs.d/site-lisp/minions
+	url = https://github.com/tarsius/minions
+[submodule "emacs.d/site-lisp/org-capture-pop-frame"]
+	path = emacs.d/site-lisp/org-capture-pop-frame
+	url = https://github.com/tumashu/org-capture-pop-frame
+[submodule "emacs.d/site-lisp/smex"]
+	path = emacs.d/site-lisp/smex
+	url = https://github.com/nonsequitur/smex
+[submodule "emacs.d/site-lisp/helm-org-rifle"]
+	path = emacs.d/site-lisp/helm-org-rifle
+	url = https://github.com/alphapapa/helm-org-rifle
+[submodule "emacs.d/site-lisp/emacs-helm-ag"]
+	path = emacs.d/site-lisp/emacs-helm-ag
+	url = https://github.com/syohex/emacs-helm-ag
+[submodule "emacs.d/site-lisp/helm-swoop"]
+	path = emacs.d/site-lisp/helm-swoop
+	url = https://github.com/ShingoFukuyama/helm-swoop
+[submodule "emacs.d/site-lisp/highlight-parentheses.el"]
+	path = emacs.d/site-lisp/highlight-parentheses.el
+	url = https://github.com/tsdh/highlight-parentheses.el
+[submodule "emacs.d/site-lisp/hl-todo"]
+	path = emacs.d/site-lisp/hl-todo
+	url = https://github.com/tarsius/hl-todo
+[submodule "emacs.d/site-lisp/pretty-symbols"]
+	path = emacs.d/site-lisp/pretty-symbols
+	url = https://github.com/drothlis/pretty-symbols
+[submodule "emacs.d/site-lisp/emacs-htmlize"]
+	path = emacs.d/site-lisp/emacs-htmlize
+	url = https://github.com/hniksic/emacs-htmlize
+[submodule "emacs.d/site-lisp/git-gutter"]
+	path = emacs.d/site-lisp/git-gutter
+	url = https://github.com/syohex/emacs-git-gutter
+[submodule "emacs.d/site-lisp/org-bullets"]
+	path = emacs.d/site-lisp/org-bullets
+	url = https://github.com/sabof/org-bullets
+[submodule "emacs.d/site-lisp/org-protocol-capture-html"]
+	path = emacs.d/site-lisp/org-protocol-capture-html
+	url = https://github.com/alphapapa/org-protocol-capture-html
+[submodule "emacs.d/site-lisp/telega.el"]
+	path = emacs.d/site-lisp/telega.el
+	url = https://github.com/zevlg/telega.el
+[submodule "emacs.d/site-lisp/swiper"]
+	path = emacs.d/site-lisp/swiper
+	url = https://github.com/abo-abo/swiper.git
+[submodule "emacs.d/site-lisp/toc-org"]
+	path = emacs.d/site-lisp/toc-org
+	url = https://github.com/snosov1/toc-org.git
+[submodule "emacs.d/site-lisp/org-download"]
+	path = emacs.d/site-lisp/org-download
+	url = https://github.com/Linusp/org-download
+[submodule "emacs.d/site-lisp/counsel-ffdata"]
+	path = emacs.d/site-lisp/counsel-ffdata
+	url = https://github.com/cireu/counsel-ffdata.git
+[submodule "emacs.d/site-lisp/ob-cypher"]
+	path = emacs.d/site-lisp/ob-cypher
+	url = git@github.com:Linusp/ob-cypher.git
+[submodule "emacs.d/site-lisp/orgba"]
+	path = emacs.d/site-lisp/orgba
+	url = https://github.com/Fuco1/orgba.git
+[submodule "emacs.d/site-lisp/ob-mermaid"]
+	path = emacs.d/site-lisp/ob-mermaid
+	url = https://github.com/arnm/ob-mermaid
+[submodule "emacs.d/site-lisp/literate-calc-mode.el"]
+	path = emacs.d/site-lisp/literate-calc-mode.el
+	url = git@github.com:sulami/literate-calc-mode.el.git
+[submodule "emacs.d/site-lisp/org-super-agenda"]
+	path = emacs.d/site-lisp/org-super-agenda
+	url = https://github.com/alphapapa/org-super-agenda
+[submodule "emacs.d/site-lisp/org-books"]
+	path = emacs.d/site-lisp/org-books
+	url = https://github.com/lepisma/org-books.git
+[submodule "emacs.d/site-lisp/color-rg"]
+	path = emacs.d/site-lisp/color-rg
+	url = https://github.com/manateelazycat/color-rg.git
+[submodule "emacs.d/site-lisp/delve"]
+	path = emacs.d/site-lisp/delve
+	url = https://github.com/publicimageltd/delve
+[submodule "emacs.d/site-lisp/lister"]
+	path = emacs.d/site-lisp/lister
+	url = https://github.com/publicimageltd/lister
+[submodule "emacs.d/site-lisp/org-transclusion"]
+	path = emacs.d/site-lisp/org-transclusion
+	url = https://github.com/nobiot/org-transclusion
+[submodule "emacs.d/site-lisp/elegant-agenda-mode"]
+	path = emacs.d/site-lisp/elegant-agenda-mode
+	url = https://github.com/justinbarclay/elegant-agenda-mode
+[submodule "emacs.d/site-lisp/-f"]
+	path = emacs.d/site-lisp/-f
+	url = https://github.com/manateelazycat/awesome-tray
+[submodule "emacs.d/site-lisp/beancount-mode"]
+	path = emacs.d/site-lisp/beancount-mode
+	url = https://github.com/beancount/beancount-mode
+[submodule "emacs.d/site-lisp/org-krita"]
+	path = emacs.d/site-lisp/org-krita
+	url = https://github.com/lepisma/org-krita.git
+[submodule "emacs.d/site-lisp/org-sketch"]
+	path = emacs.d/site-lisp/org-sketch
+	url = https://github.com/yuchen-lea/org-sketch
+[submodule "emacs.d/site-lisp/org-roam-bibtex"]
+	path = emacs.d/site-lisp/org-roam-bibtex
+	url = https://github.com/org-roam/org-roam-bibtex/
+[submodule "emacs.d/site-lisp/chatgpt"]
+	path = emacs.d/site-lisp/chatgpt
+	url = git@github.com:emacs-openai/chatgpt.git
+[submodule "emacs.d/site-lisp/openai"]
+	path = emacs.d/site-lisp/openai
+	url = git@github.com:emacs-openai/openai

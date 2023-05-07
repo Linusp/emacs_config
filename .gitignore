@@ -1,0 +1,33 @@
+# Packaging
+.cask
+*.elc
+
+# tempfile
+*~
+
+# other
+archives/
+emacs.d/elpa/gnupg/
+smex-items
+ido.last
+emacs.d/elpa/*-readme.txt
+emacs.d/games/
+emacs.d/history
+emacs.d/bookmarks
+emacs.d/recentf
+emacs.d/tramp
+emacs.d/request/
+emacs.d/session.*
+emacs.d/url/
+emacs.d/eaf/
+emacs.d/eshell/
+emacs.d/tutorial/
+emacs.d/*.org
+emacs.d/*.data
+
+.org-id-locations
+.python-environments
+ac-comphist.dat
+
+emacs_config.el
+

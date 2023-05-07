@@ -1,0 +1,2 @@
+;;; Generated package description from org-dotemacs.el  -*- no-byte-compile: t -*-
+(define-package "org-dotemacs" "20211126.2038" "Store your emacs config as an org file, and choose which bits to load." '((org "7.9.3") (cl-lib "0.5")) :commit "598759f4a139f94da62836e8f8064da6377536b2" :authors '(("Joe Bloggs" . "vapniks@yahoo.com")) :maintainer '("Joe Bloggs" . "vapniks@yahoo.com") :keywords '("local") :url "https://github.com/vapniks/org-dotemacs")
